@@ -11,14 +11,11 @@ export interface OpenAiConfig {
   maxPollMs?: number;
 }
 
-const DEFAULT_OPENAI_ROOT = "https://api.openai.com";
-const OPENAI_PATH_SUFFIX = "/v1";
+const DEFAULT_OPENAI_ROOT = "https://api.openai.com/v1";
 
 function normalizeBaseUrl(baseUrl?: string) {
   const normalized = (baseUrl ?? DEFAULT_OPENAI_ROOT).replace(/\/$/, "");
-  return normalized.endsWith(OPENAI_PATH_SUFFIX)
-    ? normalized
-    : `${normalized}${OPENAI_PATH_SUFFIX}`;
+  return normalized;
 }
 
 type ResponseOutputContent = {

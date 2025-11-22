@@ -16,7 +16,7 @@
     }
   },
   "preview": {
-    "drag-tip": "你可以把文件拖动到这个窗口中",
+    "drag-tip": "你可以把文件拖动到这个窗口中, 或者粘贴屏幕截图",
     "drag-tip-mobile": "轻触卡片即可放大，左右滑动快速浏览。",
     "no-files": "没有文件 上传或拍照以开始",
     "title": "预览",
@@ -243,7 +243,10 @@
         "name-placeholder": "例如：教室 Gemini",
         "confirm": "添加",
         "cancel": "取消",
-        "success": "已添加 {{name}}。"
+        "success": "已添加 {{name}}。",
+        "key": "API 密钥",
+        "key-placeholder": "abcdef",
+        "address": "API 地址 (可选)"
       },
       "make-active": "设为当前配置",
       "remove": {

@@ -46,7 +46,7 @@ export const DEFAULT_GEMINI_MODEL = "models/gemini-2.5-flash";
 export const DEFAULT_GEMINI_BASE_URL =
   "https://generativelanguage.googleapis.com";
 export const DEFAULT_OPENAI_MODEL = "gpt-4.1-mini";
-export const DEFAULT_OPENAI_BASE_URL = "https://api.openai.com";
+export const DEFAULT_OPENAI_BASE_URL = "https://api.openai.com/v1";
 
 function loadLegacyGemini(): Partial<AiSource> | null {
   if (typeof window === "undefined") return null;
@@ -181,9 +181,9 @@ export const useAiStore = create<AiStore>()(
 
           const nextActive =
             state.activeSourceId === id
-              ? nextSources.find((source) => source.enabled)?.id ??
+              ? (nextSources.find((source) => source.enabled)?.id ??
                 nextSources[0]?.id ??
-                "gemini-default"
+                "gemini-default")
               : state.activeSourceId;
 
           return {
@@ -245,9 +245,7 @@ export const useAiStore = create<AiStore>()(
       getClientForSource: (id) => {
         const state = get();
         if (id) {
-          const explicitSource = state.sources.find(
-            (entry) => entry.id === id,
-          );
+          const explicitSource = state.sources.find((entry) => entry.id === id);
           return explicitSource ? createClientForSource(explicitSource) : null;
         }
 

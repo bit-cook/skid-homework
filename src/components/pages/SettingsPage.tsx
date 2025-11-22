@@ -1,8 +1,6 @@
 import {
   DEFAULT_GEMINI_BASE_URL,
   DEFAULT_OPENAI_BASE_URL,
-  DEFAULT_GEMINI_MODEL,
-  DEFAULT_OPENAI_MODEL,
   type AiModelSummary,
   type AiProvider,
   useAiStore,
@@ -42,16 +40,10 @@ import {
   CommandList,
 } from "../ui/command";
 import { Check, ChevronsUpDown, Plus, Trash2 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "../ui/dialog";
 import { toast } from "sonner";
 import { useTheme } from "../theme-provider";
 import ShortcutRecorder from "../ShortcutRecorder";
+import AddAISourceDialog from "../dialogs/settings/AddAISourceDialog";
 
 const DEFAULT_BASE_BY_PROVIDER: Record<AiProvider, string> = {
   gemini: DEFAULT_GEMINI_BASE_URL,
@@ -66,7 +58,6 @@ export default function SettingsPage() {
   const setActiveSource = useAiStore((s) => s.setActiveSource);
   const updateSource = useAiStore((s) => s.updateSource);
   const toggleSource = useAiStore((s) => s.toggleSource);
-  const addSource = useAiStore((s) => s.addSource);
   const removeSource = useAiStore((s) => s.removeSource);
   const getClientForSource = useAiStore((s) => s.getClientForSource);
 
@@ -109,8 +100,6 @@ export default function SettingsPage() {
   const [availableModels, setAvailableModels] = useState<AiModelSummary[]>([]);
   const [modelPopoverOpen, setModelPopoverOpen] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
-  const [newProvider, setNewProvider] = useState<AiProvider>("gemini");
-  const [newSourceName, setNewSourceName] = useState("");
 
   useEffect(() => {
     setLocalName(activeSource?.name ?? "");
@@ -368,56 +357,6 @@ export default function SettingsPage() {
   }, [activeSource, availableModels, t]);
 
   const canRemoveSource = sources.length > 1;
-
-  const resetAddDialog = () => {
-    setNewSourceName("");
-    setNewProvider("gemini");
-  };
-
-  const handleAddDialogChange = (open: boolean) => {
-    setAddDialogOpen(open);
-    if (!open) {
-      resetAddDialog();
-    }
-  };
-
-  const handleAddSource = () => {
-    const provider = newProvider;
-    const counter =
-      sources.filter((source) => source.provider === provider).length + 1;
-    const defaultName =
-      provider === "gemini"
-        ? t("sources.providers.gemini") + ` #${counter}`
-        : t("sources.providers.openai") + ` #${counter}`;
-
-    const name = newSourceName.trim() || defaultName;
-
-    const newId = addSource({
-      name,
-      provider,
-      apiKey: null,
-      baseUrl:
-        provider === "gemini"
-          ? DEFAULT_GEMINI_BASE_URL
-          : DEFAULT_OPENAI_BASE_URL,
-      model:
-        provider === "gemini" ? DEFAULT_GEMINI_MODEL : DEFAULT_OPENAI_MODEL,
-      traits: undefined,
-      thinkingBudget: provider === "gemini" ? 8192 : undefined,
-      enabled: false,
-      pollIntervalMs: provider === "openai" ? 1_000 : undefined,
-      maxPollMs: provider === "openai" ? 30_000 : undefined,
-    });
-
-    setActiveSource(newId);
-    setAddDialogOpen(false);
-    resetAddDialog();
-    toast.success(
-      t("sources.add.success", {
-        name,
-      }),
-    );
-  };
 
   const handleRemoveSource = (id: string) => {
     if (sources.length <= 1) {
@@ -886,49 +825,7 @@ export default function SettingsPage() {
         {t("back")} <Kbd>ESC</Kbd>
       </Button>
 
-      <Dialog open={addDialogOpen} onOpenChange={handleAddDialogChange}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("sources.add.title")}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="new-provider">{t("sources.add.provider")}</Label>
-              <select
-                id="new-provider"
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                value={newProvider}
-                onChange={(event) =>
-                  setNewProvider(event.target.value as AiProvider)
-                }
-              >
-                <option value="gemini">{t("sources.providers.gemini")}</option>
-                <option value="openai">{t("sources.providers.openai")}</option>
-              </select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="new-name">{t("sources.add.name")}</Label>
-              <Input
-                id="new-name"
-                value={newSourceName}
-                onChange={(event) => setNewSourceName(event.target.value)}
-                placeholder={t("sources.add.name-placeholder")}
-              />
-            </div>
-          </div>
-          <DialogFooter className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => handleAddDialogChange(false)}
-            >
-              {t("sources.add.cancel")}
-            </Button>
-            <Button onClick={handleAddSource}>
-              {t("sources.add.confirm")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AddAISourceDialog open={addDialogOpen} onChange={setAddDialogOpen} />
     </div>
   );
 }
