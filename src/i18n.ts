@@ -43,7 +43,7 @@ i18n
       // `{{lng}}` will be replaced with the current language code (e.g., 'en', 'zh').
       // `{{ns}}` will be replaced with the namespace (e.g., 'actions', 'upload-info').
       // Since your files are in `public/locales`, the URL will be `/locales/...`
-      loadPath: "/locales/{{lng}}/{{ns}}.json",
+      loadPath: "locales/{{lng}}/{{ns}}.json",
     },
   });
 
