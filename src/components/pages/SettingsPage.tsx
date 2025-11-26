@@ -202,7 +202,9 @@ export default function SettingsPage() {
     }
   }, [activeSource, getClientForSource, t]);
 
-  loadModels();
+  useEffect(() => {
+    loadModels();
+  }, [loadModels]);
 
   const translateSettings = useCallback(
     (key: string) => t(key as never) as string,
