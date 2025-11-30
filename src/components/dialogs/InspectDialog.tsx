@@ -8,7 +8,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
@@ -40,8 +39,7 @@ export default function InspectDialog({
         <DialogHeader>
           <DialogTitle className="text-xl">Inspect Details</DialogTitle>
           <DialogDescription>
-            Review the problem statement, correct answer, and detailed
-            explanation.
+            Review the AI generated markdown.
           </DialogDescription>
         </DialogHeader>
 
