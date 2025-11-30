@@ -86,13 +86,8 @@ export default function InspectDialog({
                   <Copy className="h-3 w-3" />
                 </Button>
               </div>
-              <div>
-                <Badge
-                  variant="secondary"
-                  className="text-sm px-3 py-1 font-mono tracking-wide"
-                >
-                  {answer}
-                </Badge>
+              <div className="rounded-md bg-muted/50 p-4 text-sm leading-relaxed whitespace-pre-wrap">
+                {answer}
               </div>
             </div>
 
@@ -114,7 +109,7 @@ export default function InspectDialog({
                   <Copy className="h-3 w-3" />
                 </Button>
               </div>
-              <div className="text-sm text-muted-foreground leading-7 whitespace-pre-wrap">
+              <div className="rounded-md bg-muted/50 p-4 text-sm leading-relaxed whitespace-pre-wrap">
                 {explanation}
               </div>
             </div>
