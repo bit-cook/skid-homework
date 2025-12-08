@@ -14,146 +14,113 @@ export interface ImproveResponse {
 // SECTION: Shared Utilities
 
 /**
- * Trims markdown code fences (e.g., ```xml) from a string.
+ * Trims markdown code fences (e.g., ```text) from a string.
  * @param content The string which may be wrapped in a markdown code block.
  * @returns The unwrapped, trimmed content.
  */
 function trimMarkdownFence(content: string): string {
   const regex = /^```(?:\w+\s*)?\n?([\s\S]*)\n?```$/;
   const match = content.trim().match(regex);
-
   return match ? match[1].trim() : content.trim();
 }
 
 /**
- * Parses an XML string using the browser's DOMParser and checks for parsing errors.
- * @param xmlString The XML string to parse.
- * @returns The parsed XMLDocument or null if an error occurs.
+ * Extracts content associated with a specific header key from a text block.
+ * @param text The full text block.
+ * @param key The specific header key (e.g., "### ANSWER").
+ * @returns The extracted content or empty string.
  */
-function parseXmlString(xmlString: string): Document | null {
-  try {
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlString, "application/xml");
-    const parseError = xmlDoc.getElementsByTagName("parsererror");
-    if (parseError.length > 0) {
-      // Access the first error element to get its content.
-      console.error("Failed to parse XML: ", parseError);
-      return null;
+function extractSection(text: string, key: string): string {
+  // Regex Explanation:
+  // 1. We look for the literal key (e.g., ### ANSWER).
+  // 2. We match everything [\s\S]*? (non-greedy) until...
+  // 3. We hit another header (starting with ###) OR the Separator OR the End of String ($).
+  const regex = new RegExp(
+    `${escapeRegExp(key)}\\s*([\\s\\S]*?)(?=(?:###|---PROBLEM_SEPARATOR---|$))`,
+    "i",
+  );
+  const match = text.match(regex);
+  return match && match[1] ? match[1].trim() : "";
+}
+
+/**
+ * Helper to escape special regex characters in the key.
+ */
+function escapeRegExp(string: string): string {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
+}
+
+// SECTION: Solve Response Parsing
+
+/**
+ * Parses a string response from the AI for a "solve" request in MarkdownKV format.
+ * @param response The raw string response from the AI.
+ * @returns A SolveResponse object.
+ */
+export function parseSolveResponse(response: string): SolveResponse {
+  const content = trimMarkdownFence(response);
+
+  // 1. Split by the problem separator if multiple problems exist
+  const problemChunks = content.split("---PROBLEM_SEPARATOR---");
+
+  const problems: ProblemSolution[] = [];
+
+  for (const chunk of problemChunks) {
+    if (!chunk.trim()) continue;
+
+    const problemText = extractSection(chunk, "### PROBLEM_TEXT");
+    const explanation = extractSection(chunk, "### EXPLANATION");
+    const answer = extractSection(chunk, "### ANSWER");
+
+    // Only add if we successfully extracted at least one field to avoid empty trash
+    if (problemText || explanation || answer) {
+      problems.push({
+        problem: problemText,
+        explanation: explanation,
+        answer: answer,
+      });
     }
-    return xmlDoc;
-  } catch (e) {
-    console.error(
-      "An unexpected error occurred during XML parsing:",
-      e,
-      xmlString,
-    );
-    return null;
-  }
-}
-
-/**
- * Safely gets text content from the first child element with a given tag name.
- * @param node The parent XML element.
- * @param tagName The tag name of the child element to find.
- * @returns The text content or an empty string if the element is not found.
- */
-function getXmlTextContent(node: Element, tagName: string): string {
-  const elements = node.getElementsByTagName(tagName);
-  // Correctly access the FIRST element in the collection (at index 0)
-  // before getting its textContent. If no element is found, it will be undefined.
-  return elements[0]?.textContent ?? "";
-}
-
-// SECTION: Solve Response Parsing (Refactored)
-
-/**
- * Helper function to parse an XML string into a SolveResponse object.
- * @param xmlString The XML string to parse.
- * @returns A SolveResponse object if parsing is successful, otherwise null.
- */
-function parseXmlToSolveResponse(xmlString: string): SolveResponse | null {
-  const xmlDoc = parseXmlString(xmlString);
-  if (!xmlDoc) {
-    return null;
   }
 
-  const problemNodes = Array.from(xmlDoc.getElementsByTagName("problem"));
-  const problems: ProblemSolution[] = problemNodes.map((node) => ({
-    problem: getXmlTextContent(node, "problem_text"),
-    answer: getXmlTextContent(node, "answer"),
-    explanation: getXmlTextContent(node, "explanation"),
-  }));
+  // Fallback: If parsing failed completely, return raw content in explanation
+  if (problems.length === 0 && content.trim()) {
+    return {
+      problems: [
+        {
+          problem: "Error parsing problem text",
+          answer: "",
+          explanation: content, // Return full raw text so user sees something
+        },
+      ],
+    };
+  }
 
   return { problems };
 }
 
+// SECTION: Improve Response Parsing
+
 /**
- * Parses a string response from the AI for a "solve" request.
- * It handles JSON or XML, either raw or wrapped in a markdown code block.
+ * Parses a string response from the AI for an "improve" request in MarkdownKV format.
  * @param response The raw string response from the AI.
- * @returns A SolveResponse object if parsing is successful, otherwise null.
- */
-export function parseSolveResponse(response: string): SolveResponse | null {
-  const content = trimMarkdownFence(response);
-
-  if (content.startsWith("{")) {
-    try {
-      return JSON.parse(content) as SolveResponse;
-    } catch (e) {
-      console.error("Failed to parse JSON:", e, content);
-      throw e;
-    }
-  }
-
-  if (content.startsWith("<")) {
-    return parseXmlToSolveResponse(content);
-  }
-
-  console.error("Failed to parse response due to unknown format:", response);
-  throw Error(`Failed to parse response due to unknown format:\n${response}`);
-}
-
-// SECTION: Improve Response Parsing (New)
-
-/**
- * Helper function to parse an XML string into an ImproveResponse object.
- * @param xmlString The XML string to parse.
- * @returns An ImproveResponse object if parsing is successful, otherwise null.
- */
-function parseXmlToImproveResponse(xmlString: string): ImproveResponse | null {
-  const xmlDoc = parseXmlString(xmlString);
-  if (!xmlDoc) {
-    return null;
-  }
-
-  const solutionNode = xmlDoc.getElementsByTagName("solution").item(0);
-  if (!solutionNode) {
-    console.error("Root <solution> tag not found in XML response.");
-    return null;
-  }
-
-  return {
-    improved_answer: getXmlTextContent(solutionNode, "improved_answer"),
-    improved_explanation: getXmlTextContent(
-      solutionNode,
-      "improved_explanation",
-    ),
-  };
-}
-
-/**
- * Parses a string response from the AI for an "improve" request.
- * The expected format is XML, either raw or wrapped in a markdown code block.
- * @param response The raw string response from the AI.
- * @returns An ImproveResponse object if parsing is successful, otherwise null.
+ * @returns An ImproveResponse object.
  */
 export function parseImproveResponse(response: string): ImproveResponse | null {
   const content = trimMarkdownFence(response);
 
-  if (content.startsWith("<")) {
-    return parseXmlToImproveResponse(content);
+  const improvedExplanation = extractSection(
+    content,
+    "### IMPROVED_EXPLANATION",
+  );
+  const improvedAnswer = extractSection(content, "### IMPROVED_ANSWER");
+
+  if (!improvedExplanation && !improvedAnswer) {
+    console.error("Failed to parse Improve Response keys.");
+    return null;
   }
 
-  console.error("Failed to parse response: XML format expected.", response);
-  return null;
+  return {
+    improved_answer: improvedAnswer,
+    improved_explanation: improvedExplanation,
+  };
 }
