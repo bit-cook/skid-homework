@@ -391,6 +391,14 @@
       "ui": {
         "title": "UI",
         "show-qwen-hint": "Show Qwen3 service tip"
+      },
+      "explanation": {
+        "title": "Explanation Mode",
+        "mode": {
+          "everything": "Show everything to me",
+          "steps": "Only show hits when I need"
+        },
+        "search-placeholder": "Search modes..."
       }
     }
   },

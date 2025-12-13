@@ -391,6 +391,14 @@
       "ui": {
         "title": "界面",
         "show-qwen-hint": "显示 Qwen3 服务提示"
+      },
+      "explanation": {
+        "title": "解析显示模式",
+        "mode": {
+          "everything": "显示所有内容",
+          "steps": "当我需要的时候显示必要的步骤"
+        },
+        "search-placeholder": "搜索..."
       }
     }
   },

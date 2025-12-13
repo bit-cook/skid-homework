@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/popover";
 import { useState } from "react";
 import { ExplanationMode, useSettingsStore } from "@/store/settings-store";
+import { useTranslation } from "react-i18next";
 
 type AvailableExplanationMode = {
   value: ExplanationMode;
@@ -24,6 +25,10 @@ type AvailableExplanationMode = {
 };
 
 export default function ExplanationModeSelector() {
+  const { t } = useTranslation("commons", {
+    keyPrefix: "settings-page.advanced.explanation",
+  });
+
   const [open, setOpen] = useState(false);
 
   const { explanationMode, setExplanationMode } = useSettingsStore((s) => s);
@@ -31,11 +36,11 @@ export default function ExplanationModeSelector() {
   const AVAILABLE_EXPLANATION_MODES: AvailableExplanationMode[] = [
     {
       value: "explanation",
-      label: "Show Everything to me",
+      label: t("mode.everything"),
     },
     {
       value: "steps",
-      label: "Only show hits when I need",
+      label: t("mode.steps"),
     },
   ];
 
@@ -53,13 +58,13 @@ export default function ExplanationModeSelector() {
                 (explanation_mode) =>
                   explanation_mode.value === explanationMode,
               )?.label
-            : "Select framework..."}
+            : t("search-placeholder")}
           <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="p-0">
         <Command>
-          <CommandInput placeholder="Search explanation mode..." />
+          <CommandInput placeholder={t("search-placeholder")} />
           <CommandList>
             <CommandEmpty>
               No modes available (unexpected behavior).

@@ -266,6 +266,14 @@ interface Resources {
           "title": "Custom API base URL"
         },
         "desc": "Extras that affect uploads and the interface.",
+        "explanation": {
+          "mode": {
+            "everything": "Show everything to me",
+            "steps": "Only show hits when I need"
+          },
+          "search-placeholder": "Search modes...",
+          "title": "Explanation Mode"
+        },
         "image-post-processing": {
           "binarizing": "Enable binarizing",
           "title": "Image Post-processing"
