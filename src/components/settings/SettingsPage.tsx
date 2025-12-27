@@ -590,7 +590,7 @@ export default function SettingsPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <Label>Explanation Mode: </Label>
+              <Label>{t("advanced.explanation.title")}</Label>
 
               <ExplanationModeSelector />
             </div>

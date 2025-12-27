@@ -1,4 +1,11 @@
 {
+  "md": {
+    "generating-diagram": "Generating diagram...",
+    "diagram": {
+      "view-diagram": "View Diagram",
+      "view-code": "View Code"
+    }
+  },
   "actions": {
     "clear-all": "Clear All",
     "clear-confirmation": "Click again to clear",
@@ -98,7 +105,10 @@
     "actions": {
       "back": "Back to Scanner",
       "new-chat": "New Chat",
-      "delete-chat": "Delete Chat"
+      "delete-chat": "Delete Chat",
+      "search": "Search chats...",
+      "close-sidebar": "Close Sidebar",
+      "open-settings": "Settings"
     },
     "source": {
       "section": "Model",
@@ -123,7 +133,8 @@
     "composer": {
       "placeholder": "Ask a question or paste a problem...",
       "send": "Send",
-      "sending": "Sending..."
+      "sending": "Sending...",
+      "aigc-disclaimer": "AI can make mistakes. Verify important information."
     },
     "errors": {
       "no-source": "Please enable at least one source with an API key in Settings.",
@@ -391,6 +402,14 @@
       "ui": {
         "title": "UI",
         "show-qwen-hint": "Show Qwen3 service tip"
+      },
+      "explanation": {
+        "title": "Explanation Mode",
+        "mode": {
+          "everything": "Show everything to me",
+          "steps": "Only show hits when I need"
+        },
+        "search-placeholder": "Search modes..."
       }
     }
   },

@@ -80,6 +80,32 @@ This platform is just a workaround for this.
 - Use Khan Academy, Wikipedia or other self-learning resources
 - Leave school at 6:30
 
+## Development
+
+### Quick deploy using Vercel
+
+Please click the button below
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fcubewhy%2Fskid-homework)
+
+### Quick deploy with Docker
+
+```shell
+# Replace <commit_hash> with the actual commit hash
+docker run -p 3000:3000 ghcr.io/cubewhy/skid-homework:sha-<commit_hash>
+```
+
+Here's the Docker Compose manifest
+
+```yaml
+services:
+  skidhw:
+    # Replace <commit_hash> with the actual commit hash
+    image: ghcr.io/cubewhy/skid-homework:sha-<commit_hash>
+    ports:
+      - 3000:3000
+```
+
 ## License
 
 This work is licensed under GPL-3.0

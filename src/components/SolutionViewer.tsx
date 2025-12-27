@@ -13,7 +13,7 @@ import { useProblemsStore } from "@/store/problems-store";
 import { toast } from "sonner";
 import { type ImproveResponse } from "@/ai/response";
 import { Kbd } from "./ui/kbd";
-import { MemoizedMarkdown } from "./MarkdownRenderer";
+import { MemoizedMarkdown } from "./markdown/MarkdownRenderer";
 import {
   ImproveSolutionDialog,
   type ImproveSolutionDialogHandle,
@@ -247,6 +247,7 @@ export default function SolutionViewer({
               mode={explanationMode}
               content={activeProblem?.explanation ?? "<Empty Explanation>"}
               steps={activeProblem?.steps}
+              key={entry.item.id}
             />
 
             <div className="flex flex-wrap gap-2">
