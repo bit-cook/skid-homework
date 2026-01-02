@@ -2,12 +2,16 @@
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 import { Info, StarIcon } from "lucide-react";
-import { useEffect, useMemo, useCallback, useRef, useState } from "react";
+import { useEffect, useMemo, useCallback, useState } from "react";
 import { useAiStore } from "@/store/ai-store";
 import ActionsCard from "../cards/ActionsCard";
 import PreviewCard from "../cards/PreviewCard";
-import { SOLVE_SYSTEM_PROMPT } from "@/ai/prompts";
-import { fileToBase64, uint8ToBase64 } from "@/utils/encoding";
+
+import solvePrompt from "@/ai/prompts/solve.prompt.md";
+import diagramToolPrompt from "@/ai/prompts/tools/diagram-tool.prompt.md";
+import mermaidToolPrompt from "@/ai/prompts/tools/mermaid-tool.prompt.md";
+
+import { uint8ToBase64 } from "@/utils/encoding";
 import { parseSolveResponse } from "@/ai/response";
 
 import {
@@ -17,7 +21,7 @@ import {
 } from "@/store/problems-store";
 import SolutionsArea from "../areas/SolutionsArea";
 import { useSettingsStore } from "@/store/settings-store";
-import { binarizeImageFile } from "@/utils/image-post-processing";
+import { processImage } from "@/utils/image-post-processing";
 import { Button } from "../ui/button";
 import { useTranslation } from "react-i18next";
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -25,6 +29,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useShortcut } from "@/hooks/use-shortcut";
+import OpenCVLoader from "../OpenCVLoader";
 
 export default function ScanPage() {
   const { t } = useTranslation("commons", { keyPrefix: "scan-page" });
@@ -45,8 +50,7 @@ export default function ScanPage() {
     clearStreamedOutput,
   } = useProblemsStore((s) => s);
 
-  const { imageBinarizing, traits } = useSettingsStore((s) => s);
-  const imageBinarizingRef = useRef(imageBinarizing);
+  const { imageEnhancement, traits } = useSettingsStore((s) => s);
 
   // Zustand store for AI provider configuration.
   const sources = useAiStore((state) => state.sources);
@@ -113,7 +117,7 @@ export default function ScanPage() {
 
   // Callback to add new files to the items list using the store action.
   const appendFiles = useCallback(
-    async (files: File[] | FileList, source: FileItem["source"]) => {
+    (files: File[] | FileList, source: FileItem["source"]) => {
       let rejectedPdf = false;
       const arr = Array.from(files).filter((f) => {
         if (f.type.startsWith("image/")) {
@@ -139,40 +143,36 @@ export default function ScanPage() {
 
       if (arr.length === 0) return;
 
-      const initialItems: FileItem[] = [];
-
-      for (const file of arr) {
-        const base64Url = await fileToBase64(file);
-        const item: FileItem = {
-          id: uuidv4(),
-          file,
-          mimeType: file.type,
-          url: base64Url,
-          source,
-          status:
-            file.type.startsWith("image/") && imageBinarizingRef.current
-              ? "rasterizing"
-              : "pending",
-        };
-        initialItems.push(item);
-      }
+      const initialItems: FileItem[] = arr.map((file) => ({
+        id: uuidv4(),
+        file,
+        mimeType: file.type,
+        url: URL.createObjectURL(file),
+        source,
+        status:
+          file.type.startsWith("image/") && imageEnhancement
+            ? "processing"
+            : "pending",
+      }));
 
       addFileItems(initialItems);
 
       // Image post-processing
-      if (imageBinarizingRef.current) {
+      if (imageEnhancement) {
         initialItems.forEach((item) => {
-          if (item.status === "rasterizing") {
-            binarizeImageFile(item.file)
-              .then((rasterizedResult) => {
+          if (item.status === "processing") {
+            console.log(`Processing image ${item.file.name}`);
+            processImage(item.file)
+              .then((result) => {
+                console.log(`Success processed image ${item.file.name}`);
                 updateFileItem(item.id, {
                   status: "pending",
-                  url: rasterizedResult.url,
-                  file: rasterizedResult.file,
+                  file: result.file,
+                  url: result.url,
                 });
               })
               .catch((error) => {
-                console.error(`Failed to rasterize ${item.file.name}:`, error);
+                console.error(`Failed to process ${item.file.name}:`, error);
                 updateFileItem(item.id, {
                   status: "failed",
                 });
@@ -181,7 +181,7 @@ export default function ScanPage() {
         });
       }
     },
-    [addFileItems, updateFileItem, allowPdfUploads, t],
+    [addFileItems, imageEnhancement, allowPdfUploads, t, updateFileItem],
   );
 
   // Function to remove a specific item from the list by its ID.
@@ -250,6 +250,13 @@ export default function ScanPage() {
         description: t("toasts.no-model.description", {
           provider: invalidSource.name,
         }),
+      });
+      return;
+    }
+
+    if (items.filter((item) => item.status === "processing").length !== 0) {
+      toast(t("toasts.post-processing.title"), {
+        description: t("toasts.post-processing.description"),
       });
       return;
     }
@@ -333,9 +340,10 @@ ${traits}
 `
               : "";
 
-            ai.setSystemPrompt(
-              SOLVE_SYSTEM_PROMPT + promptPrompt + traitsPrompt,
-            );
+            ai.addSystemPrompt(solvePrompt);
+            ai.addSystemPrompt(promptPrompt + traitsPrompt);
+
+            ai.setAvailableTools([diagramToolPrompt, mermaidToolPrompt]);
 
             clearStreamedOutput(item.url);
 
@@ -421,6 +429,8 @@ ${traits}
 
   return (
     <>
+      {imageEnhancement && <OpenCVLoader />}
+
       <div className={cn("min-h-screen", isMobile && "pb-24")}>
         <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
           <header

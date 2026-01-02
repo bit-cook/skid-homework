@@ -8,6 +8,15 @@
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fcubewhy%2Fskid-homework)
 
+## 和我们一起交流
+
+我们有 Telegram 群组和 GitHub discussions
+
+可以使用下方链接加入
+
+- [Telegram Group](https://t.me/earthsworth) (仅接受SFW内容)
+- [GitHub 讨论区](https://github.com/cubewhy/skid-homework/discussions)
+
 ## 警告: 破坏性修改
 
 我们已经将服务迁移到 Next.js, 部署时请注意配置差异.
@@ -34,6 +43,7 @@ Skid-Homework 不会要求你下载桌面软件, 一切东西都在浏览器内�
 - 可定制答案风格, 不局限于标准答案
 - 支持解析多张图片/PDF 文件
 - 左撇子友好
+- 支持输出图片 (PS: 仅支持数学函数/流程图)
 
 ## 现在尝试
 
@@ -185,6 +195,28 @@ Devtools 功能如下
 - 运行 `pnpm run dev` 来预览
 
 欢迎PR
+
+### 快速部署(使用Vercel)
+
+请点击下方按钮
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fcubewhy%2Fskid-homework)
+
+### 快速部署(使用Docker)
+
+```shell
+# Replace <commit_hash> with the actual commit hash
+docker run -p 3000:3000 ghcr.io/cubewhy/skid-homework:sha-<commit_hash>
+```
+
+```yaml
+services:
+  skidhw:
+    # Replace <commit_hash> with the actual commit hash
+    image: ghcr.io/cubewhy/skid-homework:sha-<commit_hash>
+    ports:
+      - 3000:3000
+```
 
 ### 构建 Docker 映像
 

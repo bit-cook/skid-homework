@@ -1,4 +1,11 @@
 {
+  "md": {
+    "generating-diagram": "生成图片中...",
+    "diagram": {
+      "view-diagram": "查看图像",
+      "view-code": "查看代码"
+    }
+  },
   "actions": {
     "clear-all": "清空所有文件",
     "clear-confirmation": "再点击一次",
@@ -98,7 +105,10 @@
     "actions": {
       "back": "返回扫描页",
       "new-chat": "新对话",
-      "delete-chat": "删除对话"
+      "delete-chat": "删除对话",
+      "search": "搜索聊天...",
+      "close-sidebar": "关闭侧边栏",
+      "open-settings": "设置"
     },
     "source": {
       "section": "模型",
@@ -123,7 +133,8 @@
     "composer": {
       "placeholder": "输入问题或粘贴题目...",
       "send": "发送",
-      "sending": "发送中..."
+      "sending": "发送中...",
+      "aigc-disclaimer": "AI 会犯错, 请核对重要信息"
     },
     "errors": {
       "no-source": "请先在设置中启用至少一个已配置密钥的 AI 源。",
@@ -386,11 +397,19 @@
       },
       "image-post-processing": {
         "title": "图像后处理",
-        "binarizing": "开启二值化"
+        "enhancement": "开启二值化"
       },
       "ui": {
         "title": "界面",
         "show-qwen-hint": "显示 Qwen3 服务提示"
+      },
+      "explanation": {
+        "title": "解析显示模式",
+        "mode": {
+          "everything": "显示所有内容",
+          "steps": "当我需要的时候显示必要的步骤"
+        },
+        "search-placeholder": "搜索..."
       }
     }
   },
@@ -534,6 +553,10 @@
     "placeholder": "例如：请添加更详细的步骤……",
     "submit": "提交",
     "toasts": {
+      "post-processing": {
+        "title": "还在处理...",
+        "description": "图片预处理还在运行, 请再等等"
+      },
       "no-key": {
         "title": "就差一步",
         "description": "请在设置中为 {{provider}} 设置 API 密钥后再尝试。"
