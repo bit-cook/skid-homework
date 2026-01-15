@@ -29,7 +29,6 @@ export default function UploadArea({ appendFiles, allowPdf }: UploadAreaProps) {
   }) as string[];
 
   const isWorking = useProblemsStore((s) => s.isWorking);
-  // const [isDragging, setIsDragging] = useState(false);
   const [cameraTipOpen, setCameraTipOpen] = useState(false);
 
   const uploadInputRef = useRef<HTMLInputElement | null>(null);

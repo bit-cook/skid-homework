@@ -55,14 +55,6 @@ export default function PreviewCard({
     [appendFiles, isMobileLayout],
   );
 
-  // const preventTyping = (e: KeyboardEvent) => {
-  //   // 2. Allow modifier keys like Ctrl, Shift, etc., but block everything else.
-  //   // This ensures that Ctrl+V (paste) still works.
-  //   if (!e.ctrlKey && !e.metaKey && !e.altKey) {
-  //     e.preventDefault();
-  //   }
-  // };
-
   const handlePaste = (e: ClipboardEvent) => {
     e.preventDefault();
     if (!e.clipboardData) return;
