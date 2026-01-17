@@ -17,13 +17,9 @@ export default function ShortcutRecorder({
 }: ShortcutRecorderProps) {
   const { t } = useTranslation("commons");
   const [recording, setRecording] = useState(false);
-  // const [manualValue, setManualValue] = useState(value);
-  // const [manualError, setManualError] = useState<string | null>(null);
   const recordingLabel = t("settings-page.shortcuts.recording");
   const unassignedLabel = t("settings-page.shortcuts.unassigned");
   const clearLabel = t("settings-page.shortcuts.clear");
-  // const manualPlaceholder = t("settings-page.shortcuts.manual.placeholder");
-  // const manualInvalid = t("settings-page.shortcuts.manual.invalid");
 
   useEffect(() => {
     if (!recording) return;
@@ -41,7 +37,6 @@ export default function ShortcutRecorder({
       if (!combo) return;
 
       onChange(combo);
-      // setManualValue(combo);
       setRecording(false);
     };
 
@@ -49,29 +44,6 @@ export default function ShortcutRecorder({
     return () =>
       window.removeEventListener("keyup", handleKeyUp, { capture: true });
   }, [recording, onChange]);
-
-  // useEffect(() => {
-  //   setManualValue(value);
-  // }, [value]);
-
-  // const handleManualCommit = useCallback(() => {
-  //   const trimmed = manualValue.trim();
-  //   if (!trimmed) {
-  //     onChange("");
-  //     setManualError(null);
-  //     return;
-  //   }
-  //
-  //   const parsed = parseShortcutString(trimmed);
-  //   if (!parsed) {
-  //     setManualError(manualInvalid);
-  //     return;
-  //   }
-  //
-  //   onChange(parsed);
-  //   setManualValue(parsed);
-  //   setManualError(null);
-  // }, [manualValue, manualInvalid, onChange]);
 
   const label = formatShortcutLabel(value);
 
@@ -86,7 +58,6 @@ export default function ShortcutRecorder({
         }}
         onClick={() => {
           setRecording((prev) => !prev);
-          // setManualError(null);
         }}
       >
         {recording ? recordingLabel : label || unassignedLabel}
@@ -96,38 +67,11 @@ export default function ShortcutRecorder({
         variant="ghost"
         onClick={() => {
           onChange("");
-          // setManualValue("");
-          // setManualError(null);
         }}
         disabled={!value}
       >
         {clearLabel}
       </Button>
-      {/* <div className="flex min-w-[12rem] flex-1 flex-col"> */}
-      {/*   <Input */}
-      {/*     placeholder={manualPlaceholder} */}
-      {/*     value={manualValue} */}
-      {/*     onChange={(event) => { */}
-      {/*       setManualValue(event.target.value); */}
-      {/*       if (manualError) setManualError(null); */}
-      {/*     }} */}
-      {/*     onBlur={handleManualCommit} */}
-      {/*     onKeyDown={(event) => { */}
-      {/*       if (event.key === "Enter") { */}
-      {/*         event.preventDefault(); */}
-      {/*         handleManualCommit(); */}
-      {/*       } */}
-      {/*       if (event.key === "Escape") { */}
-      {/*         event.preventDefault(); */}
-      {/*         setManualValue(value); */}
-      {/*         setManualError(null); */}
-      {/*       } */}
-      {/*     }} */}
-      {/*   /> */}
-      {/*   {manualError ? ( */}
-      {/*     <span className="mt-1 text-xs text-destructive">{manualError}</span> */}
-      {/*   ) : null} */}
-      {/* </div> */}
     </div>
   );
 }

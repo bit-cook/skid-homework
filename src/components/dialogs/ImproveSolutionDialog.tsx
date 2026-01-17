@@ -7,11 +7,13 @@ import { parseImproveResponse, type ImproveResponse } from "@/ai/response";
 import { useAiStore } from "@/store/ai-store";
 import { forwardRef, useImperativeHandle, useMemo, useState } from "react";
 import { renderImproveXml } from "@/ai/request";
-import { IMPROVE_SYSTEM_PROMPT } from "@/ai/prompts";
 import { uint8ToBase64 } from "@/utils/encoding";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { TextInputDialog } from "./TextInputDialog"; // Import the new component
+import { TextInputDialog } from "./TextInputDialog";
+
+import improvePrompt from "../../ai/prompts/improve.prompt.md";
+import { getEnabledToolCallingPrompts } from "@/ai/prompts/prompt-manager";
 
 export type ImproveSolutionDialogProps = {
   entry: OrderedSolution;
@@ -83,8 +85,8 @@ export const ImproveSolutionDialog = forwardRef<
       let lastError: unknown = null;
 
       for (const source of enabledSources) {
-        const ai = getClientForSource(source.id);
-        if (!ai) {
+        const aiClient = getClientForSource(source.id);
+        if (!aiClient) {
           lastError = new Error(
             t("toasts.no-key.description", { provider: source.name }),
           );
@@ -99,12 +101,15 @@ ${source.traits}
 `
           : "";
 
-        ai.setSystemPrompt(IMPROVE_SYSTEM_PROMPT + traitsPrompt);
+        aiClient.addSystemPrompt(improvePrompt);
+        aiClient.addSystemPrompt(traitsPrompt);
+
+        aiClient.setAvailableTools(getEnabledToolCallingPrompts());
 
         try {
           clearStreamedOutput(entry.item.url);
 
-          const resText = await ai.sendMedia(
+          const resText = await aiClient.sendMedia(
             base64,
             entry.item.mimeType,
             prompt,
