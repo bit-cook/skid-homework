@@ -127,7 +127,9 @@ const CodeBlock = ({
   } else if (isJessecode) {
     return (
       <DiagramRenderer language="js" content={content}>
-        <JSXGraphDiagram jesseScript={content} />
+        <div className="w-80 lg:w-100">
+          <JSXGraphDiagram jesseScript={content} />
+        </div>
       </DiagramRenderer>
     );
   }
