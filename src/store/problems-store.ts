@@ -16,7 +16,7 @@ export type FileItem = {
 };
 
 export type Solution = {
-  imageUrl: string; // Effectively the ID/Key for the solution map
+  fileId: string;
   status: "success" | "processing" | "failed";
   streamedOutput?: string | null;
   problems: ProblemSolution[];
@@ -38,10 +38,11 @@ export interface ProblemSolution {
 export interface ProblemsState {
   // --- STATE ---
   imageItems: FileItem[];
+  // Map Key is now the FileItem.id, not the URL
   imageSolutions: Map<string, Solution>;
-  // The url of the active image
-  // TODO: refactor selectedImage, use id instead of blob url
-  selectedImage?: string;
+
+  // Refactored: Stores the unique ID of the selected image
+  selectedImageId?: string;
   selectedProblem: number;
   isWorking: boolean;
   isInitialized: boolean;
@@ -61,7 +62,7 @@ export interface ProblemsState {
 
   // Problem Management
   updateProblem: (
-    imageUrl: string,
+    fileId: string,
     problemIndex: number,
     newAnswer: string,
     newExplanation: string,
@@ -70,14 +71,14 @@ export interface ProblemsState {
 
   // Solution Management
   addSolution: (solution: Solution) => void;
-  updateSolution: (imageUrl: string, updates: Partial<Solution>) => void;
-  appendStreamedOutput: (imageUrl: string, chunk: string) => void;
-  clearStreamedOutput: (imageUrl: string) => void;
-  removeSolutionsByUrls: (urls: Set<string>) => void;
+  updateSolution: (fileId: string, updates: Partial<Solution>) => void;
+  appendStreamedOutput: (fileId: string, chunk: string) => void;
+  clearStreamedOutput: (fileId: string) => void;
+  removeSolutionsByIds: (ids: Set<string>) => void; // Renamed from ByUrls
   clearAllSolutions: () => void;
 
   // UI State
-  setSelectedImage: (image?: string) => void;
+  setSelectedImageId: (id?: string) => void; // Renamed
   setSelectedProblem: (index: number) => void;
   setWorking: (isWorking: boolean) => void;
 }
@@ -86,7 +87,7 @@ export const useProblemsStore = create<ProblemsState>((set, get) => ({
   // --- INITIAL STATE ---
   imageItems: [],
   imageSolutions: new Map(),
-  selectedImage: undefined,
+  selectedImageId: undefined,
   selectedProblem: 0,
   isWorking: false,
   isInitialized: false,
@@ -125,10 +126,15 @@ export const useProblemsStore = create<ProblemsState>((set, get) => ({
 
         // Rehydrate solution if it exists
         if (record.solution) {
-          // Important: Sync the solution's ID key to the new Object URL
-          // so the frontend can look it up by the <img> src
-          const solution = { ...record.solution, imageUrl: url };
-          solutions.set(url, solution);
+          // Sync the solution's ID key to the record ID
+          const solution: Solution = {
+            ...record.solution,
+            fileId: record.id, // Ensure strict mapping
+            // Remove legacy field if it exists in DB record
+            imageUrl: undefined,
+          } as Solution;
+
+          solutions.set(record.id, solution);
         }
       }
 
@@ -139,7 +145,6 @@ export const useProblemsStore = create<ProblemsState>((set, get) => ({
       });
     } catch (error) {
       console.error("Failed to initialize store from DB:", error);
-      // Even on error, mark initialized to prevent infinite loading screens
       set({ isInitialized: true });
     }
   },
@@ -187,6 +192,7 @@ export const useProblemsStore = create<ProblemsState>((set, get) => ({
           ? { ...item, file: newFile, url: newUrl, displayName: newName }
           : item,
       ),
+      // Note: No need to update imageSolutions map because the Key is now 'id', which hasn't changed.
     }));
 
     try {
@@ -195,7 +201,7 @@ export const useProblemsStore = create<ProblemsState>((set, get) => ({
         blob: newFile,
       });
 
-      // revoke old url after db operation successed
+      // revoke old url after db operation succeeded
       if (originalItem.url) URL.revokeObjectURL(originalItem.url);
     } catch (error) {
       console.error("Failed to update database:", error);
@@ -248,13 +254,15 @@ export const useProblemsStore = create<ProblemsState>((set, get) => ({
 
     set((state) => {
       const newSolutions = new Map(state.imageSolutions);
-      // Clean up the solution from memory map if keyed by URL
-      if (itemToRemove?.url) {
-        newSolutions.delete(itemToRemove.url);
-      }
+      // Clean up the solution from memory map using ID
+      newSolutions.delete(id);
+
       return {
         imageItems: state.imageItems.filter((item) => item.id !== id),
         imageSolutions: newSolutions,
+        // Reset selected if we deleted the active one
+        selectedImageId:
+          state.selectedImageId === id ? undefined : state.selectedImageId,
       };
     });
 
@@ -262,14 +270,14 @@ export const useProblemsStore = create<ProblemsState>((set, get) => ({
   },
 
   updateProblem: (
-    imageUrl,
+    fileId,
     problemIndex,
     newAnswer,
     newExplanation,
     newSteps,
   ) => {
     set((state) => {
-      const currentSolution = state.imageSolutions.get(imageUrl);
+      const currentSolution = state.imageSolutions.get(fileId);
       if (!currentSolution) return state;
 
       const updatedProblems = [...currentSolution.problems];
@@ -286,15 +294,12 @@ export const useProblemsStore = create<ProblemsState>((set, get) => ({
       };
 
       const newSolutionsMap = new Map(state.imageSolutions);
-      newSolutionsMap.set(imageUrl, updatedSolution);
+      newSolutionsMap.set(fileId, updatedSolution);
 
       // Sync to DB
-      const fileItem = state.imageItems.find((i) => i.url === imageUrl);
-      if (fileItem) {
-        db.homeworks
-          .update(fileItem.id, { solution: updatedSolution })
-          .catch(console.error);
-      }
+      db.homeworks
+        .update(fileId, { solution: updatedSolution })
+        .catch(console.error);
 
       return { imageSolutions: newSolutionsMap };
     });
@@ -307,7 +312,7 @@ export const useProblemsStore = create<ProblemsState>((set, get) => ({
     set({
       imageItems: [],
       imageSolutions: new Map(),
-      selectedImage: undefined,
+      selectedImageId: undefined,
     });
 
     await db.homeworks.clear();
@@ -315,32 +320,27 @@ export const useProblemsStore = create<ProblemsState>((set, get) => ({
 
   addSolution: (newSolution) =>
     set((state) => {
-      if (state.imageSolutions.has(newSolution.imageUrl)) {
-        console.warn(`Solution for ${newSolution.imageUrl} already exists.`);
+      if (state.imageSolutions.has(newSolution.fileId)) {
+        console.warn(`Solution for ${newSolution.fileId} already exists.`);
         return state;
       }
       const newSolutionsMap = new Map(state.imageSolutions);
-      newSolutionsMap.set(newSolution.imageUrl, newSolution);
+      newSolutionsMap.set(newSolution.fileId, newSolution);
 
       // Sync to DB
-      const fileItem = state.imageItems.find(
-        (i) => i.url === newSolution.imageUrl,
-      );
-      if (fileItem) {
-        db.homeworks
-          .update(fileItem.id, { solution: newSolution })
-          .catch(console.error);
-      }
+      db.homeworks
+        .update(newSolution.fileId, { solution: newSolution })
+        .catch(console.error);
 
       return { imageSolutions: newSolutionsMap };
     }),
 
-  updateSolution: (imageUrl, updates) =>
+  updateSolution: (fileId, updates) =>
     set((state) => {
-      const currentSolution = state.imageSolutions.get(imageUrl);
+      const currentSolution = state.imageSolutions.get(fileId);
       if (!currentSolution) {
         console.error(
-          `Attempted to update a non-existent solution for URL: ${imageUrl}`,
+          `Attempted to update a non-existent solution for ID: ${fileId}`,
         );
         return state;
       }
@@ -352,27 +352,24 @@ export const useProblemsStore = create<ProblemsState>((set, get) => ({
       }
 
       const newSolutionsMap = new Map(state.imageSolutions);
-      newSolutionsMap.set(imageUrl, updatedSolution);
+      newSolutionsMap.set(fileId, updatedSolution);
 
       // Sync to DB (Only persist significant updates, avoid saving while streaming)
-      const fileItem = state.imageItems.find((i) => i.url === imageUrl);
-      if (fileItem) {
-        db.homeworks
-          .update(fileItem.id, { solution: updatedSolution })
-          .catch(console.error);
-      }
+      db.homeworks
+        .update(fileId, { solution: updatedSolution })
+        .catch(console.error);
 
       return { imageSolutions: newSolutionsMap };
     }),
 
-  appendStreamedOutput: (imageUrl, chunk) =>
+  appendStreamedOutput: (fileId, chunk) =>
     set((state) => {
       // Memory only - do not sync to DB to avoid IO trashing
-      const currentSolution = state.imageSolutions.get(imageUrl);
+      const currentSolution = state.imageSolutions.get(fileId);
       if (!currentSolution) return state;
 
       const newSolutionsMap = new Map(state.imageSolutions);
-      newSolutionsMap.set(imageUrl, {
+      newSolutionsMap.set(fileId, {
         ...currentSolution,
         streamedOutput: (currentSolution.streamedOutput || "") + chunk,
       });
@@ -380,13 +377,13 @@ export const useProblemsStore = create<ProblemsState>((set, get) => ({
       return { imageSolutions: newSolutionsMap };
     }),
 
-  clearStreamedOutput: (imageUrl) =>
+  clearStreamedOutput: (fileId) =>
     set((state) => {
-      const currentSolution = state.imageSolutions.get(imageUrl);
+      const currentSolution = state.imageSolutions.get(fileId);
       if (!currentSolution) return state;
 
       const newSolutionsMap = new Map(state.imageSolutions);
-      newSolutionsMap.set(imageUrl, {
+      newSolutionsMap.set(fileId, {
         ...currentSolution,
         streamedOutput: null,
       });
@@ -394,19 +391,15 @@ export const useProblemsStore = create<ProblemsState>((set, get) => ({
       return { imageSolutions: newSolutionsMap };
     }),
 
-  removeSolutionsByUrls: (urlsToRemove) =>
+  removeSolutionsByIds: (idsToRemove) =>
     set((state) => {
       const newSolutionsMap = new Map(state.imageSolutions);
-      urlsToRemove.forEach((url) => {
-        newSolutionsMap.delete(url);
+
+      idsToRemove.forEach((id) => {
+        newSolutionsMap.delete(id);
 
         // Remove solution from DB record
-        const fileItem = state.imageItems.find((i) => i.url === url);
-        if (fileItem) {
-          db.homeworks
-            .update(fileItem.id, { solution: undefined })
-            .catch(console.error);
-        }
+        db.homeworks.update(id, { solution: undefined }).catch(console.error);
       });
       return { imageSolutions: newSolutionsMap };
     }),
@@ -420,7 +413,7 @@ export const useProblemsStore = create<ProblemsState>((set, get) => ({
       .catch(console.error);
   },
 
-  setSelectedImage: (selectedImage) => set({ selectedImage }),
+  setSelectedImageId: (selectedImageId) => set({ selectedImageId }),
   setSelectedProblem: (selectedProblem) => set({ selectedProblem }),
   setWorking: (isWorking) => set({ isWorking }),
 }));

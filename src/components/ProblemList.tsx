@@ -1,7 +1,7 @@
 import { useProblemsStore } from "@/store/problems-store";
-import type { OrderedSolution } from "./areas/SolutionsArea";
 import { Button } from "./ui/button";
 import { useTranslation } from "react-i18next";
+import { OrderedSolution } from "@/hooks/use-solution-export";
 
 export type ProblemListProps = {
   entry: OrderedSolution;

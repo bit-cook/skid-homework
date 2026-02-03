@@ -42,13 +42,13 @@ export default function PreviewItem({
   const { t } = useTranslation("commons", { keyPrefix: "preview" });
   const { t: tCommon } = useTranslation("commons");
 
-  const { setSelectedImage, selectedImage } = useProblemsStore((s) => s);
+  const { setSelectedImageId, selectedImageId } = useProblemsStore((s) => s);
 
   const isMobile = layout === "mobile";
-  const isSelected = selectedImage === item.url;
+  const isSelected = selectedImageId === item.id;
 
   const switchActiveItem = () => {
-    setSelectedImage(item.url);
+    setSelectedImageId(item.id);
   };
 
   return (

@@ -1,7 +1,6 @@
 import { Loader2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Kbd } from "../ui/kbd";
-import type { OrderedSolution } from "../areas/SolutionsArea";
 import { useProblemsStore, type ProblemSolution } from "@/store/problems-store";
 import { parseImproveResponse, type ImproveResponse } from "@/ai/response";
 import { useAiStore } from "@/store/ai-store";
@@ -14,6 +13,7 @@ import { TextInputDialog } from "./TextInputDialog";
 
 import improvePrompt from "../../ai/prompts/improve.prompt.md";
 import { getEnabledToolCallingPrompts } from "@/ai/prompts/prompt-manager";
+import { OrderedSolution } from "@/hooks/use-solution-export";
 
 export type ImproveSolutionDialogProps = {
   entry: OrderedSolution;

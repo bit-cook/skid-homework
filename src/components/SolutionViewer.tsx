@@ -8,7 +8,6 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
-import type { OrderedSolution } from "./areas/SolutionsArea";
 import { useProblemsStore } from "@/store/problems-store";
 import { toast } from "sonner";
 import { type ImproveResponse } from "@/ai/response";
@@ -26,6 +25,7 @@ import { encodeSeedChat } from "@/lib/chat-seed";
 import { useSettingsStore } from "@/store/settings-store";
 import InspectDialog from "./dialogs/InspectDialog";
 import Explanation from "./Explanation";
+import { OrderedSolution } from "@/hooks/use-solution-export";
 
 export type SolutionViewerProps = {
   entry: OrderedSolution;

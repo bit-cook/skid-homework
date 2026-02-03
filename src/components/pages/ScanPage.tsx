@@ -17,7 +17,7 @@ import {
   type FileItem as FileItem,
   type ProblemSolution,
 } from "@/store/problems-store";
-import SolutionsArea from "../areas/SolutionsArea";
+import SolutionsArea from "../solutions/SolutionsArea";
 import { useSettingsStore } from "@/store/settings-store";
 import { processImage } from "@/utils/image-post-processing";
 import { Button } from "../ui/button";
@@ -44,7 +44,7 @@ export default function ScanPage() {
     clearAllItems,
     addSolution,
     updateSolution,
-    removeSolutionsByUrls,
+    removeSolutionsByIds,
     clearAllSolutions,
     appendStreamedOutput,
     clearStreamedOutput,
@@ -305,14 +305,14 @@ export default function ScanPage() {
       const concurrency = 4;
       const n = itemsToProcess.length;
 
-      const urlsToProcess = new Set(itemsToProcess.map((item) => item.url));
-      removeSolutionsByUrls(urlsToProcess);
+      const idsToProcess = new Set(itemsToProcess.map((item) => item.id));
+      removeSolutionsByIds(idsToProcess);
 
       const processOne = async (item: FileItem) => {
         console.log(`Processing ${item.id}`);
 
         addSolution({
-          imageUrl: item.url,
+          fileId: item.url,
           status: "processing",
           problems: [],
         });
