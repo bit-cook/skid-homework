@@ -5,7 +5,7 @@ import {
 } from "../ui/collapsible";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
-import { useCallback, useMemo, useRef, type KeyboardEvent } from "react";
+import { useCallback, useMemo, type KeyboardEvent } from "react";
 import { useProblemsStore } from "@/store/problems-store";
 import { useAiStore } from "@/store/ai-store";
 import ProblemList from "../ProblemList";
@@ -44,7 +44,6 @@ export default function ActiveSolutionContent({
     [aiSources],
   );
 
-  const viewerRef = useRef<HTMLElement | null>(null);
   const [{ x }, api] = useSpring(() => ({ x: 0 }));
 
   const problems = entry.solutions.problems ?? [];
@@ -81,8 +80,6 @@ export default function ActiveSolutionContent({
       e.preventDefault();
       if (e.shiftKey) goPrevProblem();
       else goNextProblem();
-      // TODO: the viewerRef is confusing, may it should be removed?
-      viewerRef.current?.focus();
     }
   };
 
@@ -106,8 +103,6 @@ export default function ActiveSolutionContent({
 
       if (mx < 0) goNextProblem();
       else goPrevProblem();
-
-      setTimeout(() => viewerRef.current?.focus(), 0);
     },
     { enabled: prefersTouch && isActive, filterTaps: true, threshold: 25 },
   );
@@ -218,7 +213,6 @@ export default function ActiveSolutionContent({
           <ProblemList entry={entry} />
 
           <SolutionViewer
-            ref={viewerRef}
             entry={entry}
             // Pass navigation intended for the Viewer
             goNextImage={() => onNavigateImage("next")}
