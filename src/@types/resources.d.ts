@@ -234,6 +234,7 @@ interface Resources {
         "slogan": "Students' lives matter",
         "source": "Source code"
       },
+      "loading": "Loading...",
       "mobile": {
         "empty": "Add a photo or PDF to get started.",
         "hint-pdf": "Enable a Gemini source in Settings to allow PDF uploads.",
@@ -565,7 +566,7 @@ interface Resources {
       "focus-region-aria": "Solutions keyboard focus region (Tab/Shift+Tab for problems, Space/Shift+Space for images)",
       "gesture-hint": "Swipe left or right to switch problems.",
       "idle": "No solutions yet. Add images and click \"Let's Skid\" to see results here.",
-      "photo-label": "Photo {{index}} • {{source}}",
+      "photo-label": "Photo {{index}} • {{fileName}} • {{source}}",
       "status": {
         "failed": "Failed to process this image. Please try again.",
         "pending": "Processing in progress...",

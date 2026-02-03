@@ -438,8 +438,8 @@ ${traits}
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <p className="text-muted-foreground animate-pulse">
-          {/*TODO: I18N for the loading text*/}
-          Loading history...
+          {/* Loading */}
+          {t("loading")}
         </p>
       </div>
     );

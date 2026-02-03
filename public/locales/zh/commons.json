@@ -52,6 +52,7 @@
     "discussions-btn": "讨论区",
     "title": "扫描你的作业",
     "tip": "我们不会在未经授权时上传您的文件",
+    "loading": "加载中...",
     "mobile": {
       "status": "已有 {{count}} 个文件",
       "status_plural": "已有 {{count}} 个文件",

@@ -52,6 +52,7 @@
     "discussions-btn": "Discussions",
     "title": "Scan your homework",
     "tip": "We never upload without your action.",
+    "loading": "Loading...",
     "mobile": {
       "status": "{{count}} file ready",
       "status_plural": "{{count}} files ready",
