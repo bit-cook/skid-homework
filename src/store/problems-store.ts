@@ -150,20 +150,21 @@ export const useProblemsStore = create<ProblemsState>((set, get) => ({
   },
 
   addFileItems: async (newItems) => {
-    // Optimistic UI update
-    set((state) => ({ imageItems: [...state.imageItems, ...newItems] }));
+    const now = Date.now();
 
     // Prepare records for DB
-    const records: HomeworkRecord[] = newItems.map((item) => ({
+    const records: HomeworkRecord[] = newItems.map((item, index) => ({
       id: item.id,
       blob: item.file,
       fileName: item.displayName,
       mimeType: item.mimeType,
       source: item.source,
       status: item.status,
-      createdAt: Date.now(),
+      createdAt: now + index,
       solution: undefined,
     }));
+
+    set((state) => ({ imageItems: [...state.imageItems, ...newItems] }));
 
     try {
       await db.homeworks.bulkAdd(records);
