@@ -311,12 +311,6 @@ export default function ScanPage() {
       const processOne = async (item: FileItem) => {
         console.log(`Processing ${item.id}`);
 
-        addSolution({
-          fileId: item.id,
-          status: "processing",
-          problems: [],
-        });
-
         const buf = await item.file.arrayBuffer();
         const base64 = uint8ToBase64(new Uint8Array(buf));
 
@@ -386,6 +380,16 @@ ${traits}
 
         throw lastError ?? new Error("All AI sources exhausted");
       };
+
+      // add to orderedSolutions
+      for (const item of itemsToProcess) {
+        // Init solution object
+        addSolution({
+          fileId: item.id,
+          status: "processing",
+          problems: [],
+        });
+      }
 
       let nextIndex = 0;
       const worker = async () => {
