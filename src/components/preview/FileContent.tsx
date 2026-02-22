@@ -19,7 +19,15 @@ const TextFilePreview = ({ item }: { item: FileItem }) => {
   const [content, setContent] = useState<string>("");
 
   useEffect(() => {
-    readTextFile(item.url).then((text) => setContent(text));
+    let canceled = false;
+    readTextFile(item.url).then((text) => {
+      if (!canceled) {
+        setContent(text);
+      }
+    });
+    return () => {
+      canceled = true;
+    };
   }, [item.url]);
 
   return (

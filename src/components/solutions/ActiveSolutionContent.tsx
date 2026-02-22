@@ -49,7 +49,22 @@ const TextSolutionPreview = ({
   const [content, setContent] = useState<string>("");
 
   useEffect(() => {
-    readTextFile(item.url).then(setContent);
+    let ignore = false;
+    readTextFile(item.url)
+      .then((text) => {
+        if (!ignore) {
+          setContent(text);
+        }
+      })
+      .catch(() => {
+        if (!ignore) {
+          // Optionally clear content or keep previous content; here we clear.
+          setContent("");
+        }
+        });
+    return () => {
+      ignore = true;
+    };
   }, [item.url]);
 
   return (
