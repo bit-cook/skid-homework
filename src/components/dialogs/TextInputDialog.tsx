@@ -13,6 +13,7 @@ import {
 import { Kbd } from "../ui/kbd";
 import { Textarea } from "../ui/textarea";
 import { useState } from "react";
+import { useSettingsStore } from "@/store/settings-store";
 
 export type TextInputDialogProps = {
   trigger: React.ReactNode;
@@ -42,10 +43,13 @@ export const TextInputDialog = ({
   allowEmpty,
 }: TextInputDialogProps) => {
   const [inputValue, setInputValue] = useState(initialValue ?? "");
+  const clearDialogOnSubmit = useSettingsStore((s) => s.clearDialogOnSubmit);
 
   const handleSubmit = () => {
     onSubmit(inputValue.trim());
-    setInputValue("");
+    if (clearDialogOnSubmit) {
+      setInputValue("");
+    }
   };
 
   const onKeyDown: React.KeyboardEventHandler<HTMLTextAreaElement> = (e) => {

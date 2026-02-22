@@ -64,6 +64,9 @@ export interface SettingsState {
 
   devtoolsEnabled: boolean;
   setDevtoolsState: (state: boolean) => void;
+
+  clearDialogOnSubmit: boolean;
+  setClearDialogOnSubmit: (state: boolean) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -78,6 +81,7 @@ export const useSettingsStore = create<SettingsState>()(
       traits: "",
       explanationMode: "explanation",
       devtoolsEnabled: false,
+      clearDialogOnSubmit: true,
 
       setImageEnhancement: (state) => set({ imageEnhancement: state }),
       setShowQwenHint: (state) => set({ showQwenHint: state }),
@@ -111,6 +115,7 @@ export const useSettingsStore = create<SettingsState>()(
       setTraits: (traits) => set({ traits }),
       setExplanationMode: (explanationMode) => set({ explanationMode }),
       setDevtoolsState: (state) => set({ devtoolsEnabled: state }),
+      setClearDialogOnSubmit: (state) => set({ clearDialogOnSubmit: state }),
     }),
     {
       name: "skidhw-storage",
@@ -125,8 +130,9 @@ export const useSettingsStore = create<SettingsState>()(
         traits: state.traits,
         explanationMode: state.explanationMode,
         devtools: state.devtoolsEnabled,
+        clearDialogOnSubmit: state.clearDialogOnSubmit,
       }),
-      version: 6,
+      version: 7,
       migrate: (persistedState, version) => {
         const data: Partial<SettingsState> & Record<string, unknown> =
           persistedState && typeof persistedState === "object"
@@ -149,6 +155,9 @@ export const useSettingsStore = create<SettingsState>()(
             SHOULD_SHOW_QWEN_HINT_DEFAULT,
           languageInitialized:
             (data as { languageInitialized?: boolean }).languageInitialized ??
+            true,
+          clearDialogOnSubmit:
+            (data as { clearDialogOnSubmit?: boolean }).clearDialogOnSubmit ??
             true,
         };
       },

@@ -453,7 +453,8 @@
       },
       "ui": {
         "title": "UI",
-        "show-qwen-hint": "Show Qwen3 service tip"
+        "show-qwen-hint": "Show Qwen3 service tip",
+        "clear-dialog-on-submit": "Clear dialog after submit"
       },
       "explanation": {
         "title": "Explanation Mode",

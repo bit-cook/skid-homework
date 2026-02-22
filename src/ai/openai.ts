@@ -82,18 +82,18 @@ export class OpenAiClient extends BaseAiClient {
         }
         let text: string;
         try {
-          text = base64Decoder(media, charset);
+          text = await base64Decoder(media, charset);
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (err) {
           // Fallback to utf-8 if the specified charset is not supported by TextDecoder
-          text = base64Decoder(media, "utf-8");
+          text = await base64Decoder(media, "utf-8");
         }
         contentParts.push({
           type: "text",
           text: `\n\n[File Content]\n${text}\n\n`,
         });
       } catch (e) {
-        console.error("Failed to decode base64 text", e);
+        throw new Error("Failed to decode base64 text: " + (e instanceof Error ? e.message : String(e)));
       }
     }
 

@@ -453,7 +453,8 @@
       },
       "ui": {
         "title": "界面",
-        "show-qwen-hint": "显示 Qwen3 服务提示"
+        "show-qwen-hint": "显示 Qwen3 服务提示",
+        "clear-dialog-on-submit": "提交后清空输入框"
       },
       "explanation": {
         "title": "解析显示模式",

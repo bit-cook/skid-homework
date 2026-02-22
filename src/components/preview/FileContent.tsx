@@ -2,7 +2,7 @@ import { FileItem } from "@/store/problems-store";
 import { useTranslation } from "react-i18next";
 import { PhotoView } from "react-photo-view";
 import { useEffect, useState } from "react";
-import { readTextFile } from "@/utils/file-utils";
+import { isTextMimeType, readTextFile } from "@/utils/file-utils";
 import {
   Dialog,
   DialogContent,
@@ -65,10 +65,7 @@ export default function FileContent({ it }: FileContentProps) {
     );
   }
 
-  if (
-    it.mimeType.startsWith("text/") ||
-    it.file.name.match(/\.(md|json|txt)$/i)
-  ) {
+  if (isTextMimeType(it.mimeType, it.file.name)) {
     return <TextFilePreview item={it} />;
   }
 

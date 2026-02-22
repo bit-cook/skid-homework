@@ -250,7 +250,7 @@ export default function UploadArea({ appendFiles, allowPdf }: UploadAreaProps) {
             <Upload className="h-5 w-5" />
             {t("upload")}
           </span>
-          {!isCompact && <ShortcutHint shortcut={uploadShortcut} />}
+          <ShortcutHint shortcut={uploadShortcut} />
         </Button>
       </div>
       <div className={cn("flex gap-2 w-full", isCompact && "flex-col")}>
@@ -282,7 +282,7 @@ export default function UploadArea({ appendFiles, allowPdf }: UploadAreaProps) {
             <Camera className="h-5 w-5 flex-shrink-0" />
             <span className="truncate">{t("take-photo")}</span>
           </span>
-          {!isCompact && <ShortcutHint shortcut={cameraShortcut} />}
+          <ShortcutHint shortcut={cameraShortcut} />
         </Button>
         <TextInputDialog
           isOpen={textInputOpen}
@@ -307,7 +307,7 @@ export default function UploadArea({ appendFiles, allowPdf }: UploadAreaProps) {
                 <FileText className="h-5 w-5 flex-shrink-0" />
                 <span className="truncate">{t("text-input.button")}</span>
               </span>
-              {!isCompact && <ShortcutHint shortcut={textInputShortcut} />}
+              <ShortcutHint shortcut={textInputShortcut} />
             </Button>
           }
         />

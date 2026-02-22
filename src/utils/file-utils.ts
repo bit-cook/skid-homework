@@ -21,3 +21,14 @@ export async function readTextFile(url: string): Promise<string> {
     return "";
   }
 }
+
+export function isTextMimeType(mimeType: string, fileName?: string): boolean {
+  if (mimeType.startsWith("text/") || mimeType === "application/json") {
+    return true;
+  }
+  if (fileName) {
+    const lowerName = fileName.toLowerCase();
+    return lowerName.endsWith(".md") || lowerName.endsWith(".json") || lowerName.endsWith(".txt");
+  }
+  return false;
+}

@@ -19,7 +19,7 @@ import { useDrag } from "@use-gesture/react";
 import { animated, to, useSpring } from "@react-spring/web";
 import { OrderedSolution } from "@/hooks/use-solution-export";
 import { Maximize2 } from "lucide-react";
-import { readTextFile } from "@/utils/file-utils";
+import { isTextMimeType, readTextFile } from "@/utils/file-utils";
 import {
   Dialog,
   DialogContent,
@@ -56,7 +56,8 @@ const TextSolutionPreview = ({
           setContent(text);
         }
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error("Failed to read text file for preview:", item.url, error);
         if (!ignore) {
           // Optionally clear content or keep previous content; here we clear.
           setContent("");
@@ -278,8 +279,7 @@ export default function ActiveSolutionContent({
             </div>
           </CollapsibleContent>
         </Collapsible>
-      ) : entry.item.mimeType.startsWith("text/") ||
-        entry.item.file.name.match(/\.(md|json|txt)$/i) ? (
+      ) : isTextMimeType(entry.item.mimeType, entry.item.file.name) ? (
         <TextSolutionPreview item={entry.item} t={t} tCommon={tCommon} />
       ) : null}
 

@@ -317,6 +317,7 @@ interface Resources {
         },
         "title": "高级设置",
         "ui": {
+          "clear-dialog-on-submit": "提交后清空输入框",
           "show-qwen-hint": "显示 Qwen3 服务提示",
           "title": "界面"
         }
