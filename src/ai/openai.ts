@@ -35,7 +35,9 @@ export class OpenAiClient extends BaseAiClient {
     media: string,
     mimeType: string,
     prompt?: string,
-    model = "gpt-5.3",
+    // replacing with gpt-5.2 as the default model since GPT-4o and older models are retiring.
+    // see https://openai.com/index/retiring-gpt-4o-and-older-models/
+    model = "gpt-5.2",
     callback?: (text: string) => void,
   ) {
     const messages: ChatCompletionMessageParam[] = [];
