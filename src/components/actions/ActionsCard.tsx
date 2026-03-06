@@ -59,7 +59,7 @@ export default function ActionsCard({
       className={cn(
         "md:col-span-1 border-white/10 backdrop-blur",
         layout === "mobile" &&
-          "border border-white/20 bg-background/70 shadow-lg backdrop-blur-lg",
+        "border border-white/20 bg-background/70 shadow-lg backdrop-blur-lg",
         className,
       )}
     >
@@ -103,7 +103,7 @@ export default function ActionsCard({
             variant="secondary"
             onClick={handleSettingsBtnClick}
           >
-            {t("settings")}{" "}
+            {t("settings")}
             {layout !== "mobile" && (
               <ShortcutHint shortcut={settingsShortcut} />
             )}

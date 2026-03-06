@@ -108,7 +108,7 @@ export default function ActionsArea({
           </>
         ) : (
           <>
-            {t("scan")}{" "}
+            {t("scan")}
             {!isMobileLayout && <ShortcutHint shortcut={scanShortcut} />}
           </>
         )}
