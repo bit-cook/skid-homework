@@ -1,6 +1,6 @@
 # 打滑作业平台
 
-![Thumbnail](.github/images/skidhw-thumbnail.png)
+![Thumbnail](.github/images/skidhw-thumbnail-new.png)
 
 [ENGLISH README](/README-EN.md)
 

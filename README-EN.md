@@ -1,6 +1,6 @@
 # SkidHomework Platform
 
-![Thumbnail](.github/images/skidhw-thumbnail.png)
+![Thumbnail](.github/images/skidhw-thumbnail-new.png)
 
 Ergonomically designed, AI-powered homework solver
 
