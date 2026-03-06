@@ -56,3 +56,4 @@
 1.  **Header**: 必须严格使用 `### IMPROVED_EXPLANATION` 和 `### IMPROVED_ANSWER` 作为分隔符。
 2.  **Steps**: 解析内部必须使用 `#### Step N: ...` 的格式来分隔步骤。
 3.  **LaTeX语法**: 数学公式必须使用 LaTeX 语法，并用 `$$ ... $$` 包裹。
+    但是不要用 Markdown 代码块(重音符/Backtick)包裹Latax 语法, 否则将无法解析
