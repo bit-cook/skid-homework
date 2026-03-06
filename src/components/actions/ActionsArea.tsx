@@ -75,44 +75,46 @@ export default function ActionsArea({
         )}
       />
 
-      <Button
-        ref={clearAllBtnRef}
-        variant="destructive"
-        className={cn(
-          "w-full items-center justify-center",
-          isMobileLayout && "py-6 text-base",
-        )}
-        size={isMobileLayout ? "lg" : "default"}
-        disabled={itemsLength === 0 || isWorking}
-        onClick={handleClearAll}
-      >
-        <span className="flex items-center gap-2">
-          <Trash2 className="h-5 w-5 shrink-0" />
-          {!confirmedClear ? t("clear-all") : t("clear-confirmation")}
-        </span>
-        {!isMobileLayout && <ShortcutHint shortcut={clearShortcut} />}
-      </Button>
-      <Button
-        ref={skidBtnRef}
-        className={cn(
-          "w-full items-center justify-center gap-2",
-          isMobileLayout && "py-6 text-base",
-        )}
-        size={isMobileLayout ? "lg" : "default"}
-        disabled={itemsLength === 0 || isWorking}
-        onClick={handleSkidBtnClicked}
-      >
-        {isWorking ? (
-          <>
-            <Loader2Icon className="h-5 w-5 animate-spin" /> {t("processing")}
-          </>
-        ) : (
-          <>
-            {t("scan")}
-            {!isMobileLayout && <ShortcutHint shortcut={scanShortcut} />}
-          </>
-        )}
-      </Button>
+      <div className="flex flex-row flex-wrap gap-2">
+        <Button
+          ref={clearAllBtnRef}
+          variant="destructive"
+          className={cn(
+            "items-center justify-center flex-1",
+            isMobileLayout && "py-6 text-base",
+          )}
+          size={isMobileLayout ? "lg" : "default"}
+          disabled={itemsLength === 0 || isWorking}
+          onClick={handleClearAll}
+        >
+          <span className="flex items-center gap-2">
+            <Trash2 className="h-5 w-5 shrink-0" />
+            {!confirmedClear ? t("clear-all") : t("clear-confirmation")}
+          </span>
+          {!isMobileLayout && <ShortcutHint shortcut={clearShortcut} />}
+        </Button>
+        <Button
+          ref={skidBtnRef}
+          className={cn(
+            "items-center justify-center gap-2 flex-1",
+            isMobileLayout && "py-6 text-base",
+          )}
+          size={isMobileLayout ? "lg" : "default"}
+          disabled={itemsLength === 0 || isWorking}
+          onClick={handleSkidBtnClicked}
+        >
+          {isWorking ? (
+            <>
+              <Loader2Icon className="h-5 w-5 animate-spin" /> {t("processing")}
+            </>
+          ) : (
+            <>
+              {t("scan")}
+              {!isMobileLayout && <ShortcutHint shortcut={scanShortcut} />}
+            </>
+          )}
+        </Button>
+      </div>
     </div>
   );
 }
