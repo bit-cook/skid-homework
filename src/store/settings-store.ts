@@ -5,7 +5,6 @@ export type ThemePreference = "light" | "dark" | "system";
 export type LanguagePreference = "en" | "zh";
 export type ShortcutAction =
   | "upload"
-  | "camera"
   | "textInput"
   | "adbScreenshot"
   | "startScan"
@@ -20,7 +19,6 @@ export type ExplanationMode = "explanation" | "steps";
 
 const DEFAULT_SHORTCUTS: ShortcutMap = {
   upload: "ctrl+1",
-  camera: "ctrl+2",
   textInput: "ctrl+3",
   startScan: "ctrl+4",
   clearAll: "ctrl+5",

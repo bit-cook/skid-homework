@@ -234,11 +234,6 @@ export default function SettingsPage() {
         description: translateSettings("shortcuts.actions.upload.description"),
       },
       {
-        action: "camera" as ShortcutAction,
-        label: translateSettings("shortcuts.actions.camera.label"),
-        description: translateSettings("shortcuts.actions.camera.description"),
-      },
-      {
         action: "textInput" as ShortcutAction,
         label: translateSettings("shortcuts.actions.text-input.label"),
         description: translateSettings("shortcuts.actions.text-input.description"),

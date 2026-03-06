@@ -1,4 +1,4 @@
-import { Camera, MoreVertical, Upload, FileText } from "lucide-react";
+import { MoreVertical, Upload, FileText } from "lucide-react";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -107,13 +107,13 @@ export default function UploadArea({ appendFiles, allowPdf }: UploadAreaProps) {
     const usb =
       typeof navigator !== "undefined" && "usb" in navigator
         ? (
-            navigator as Navigator & {
-              usb?: {
-                addEventListener: typeof window.addEventListener;
-                removeEventListener: typeof window.removeEventListener;
-              };
-            }
-          ).usb
+          navigator as Navigator & {
+            usb?: {
+              addEventListener: typeof window.addEventListener;
+              removeEventListener: typeof window.removeEventListener;
+            };
+          }
+        ).usb
         : undefined;
 
     void updateAdbStatus();
@@ -192,10 +192,6 @@ export default function UploadArea({ appendFiles, allowPdf }: UploadAreaProps) {
     handleUploadBtnClicked,
   ]);
 
-  const cameraShortcut = useShortcut("camera", () => handleCameraBtnClicked(), [
-    handleCameraBtnClicked,
-  ]);
-
   const adbScreenshotShortcut = useShortcut(
     "adbScreenshot",
     () => handleAdbBtnClicked(),
@@ -267,23 +263,23 @@ export default function UploadArea({ appendFiles, allowPdf }: UploadAreaProps) {
             e.currentTarget.value = "";
           }}
         />
-        <Button
-          ref={cameraBtnRef}
-          variant="secondary"
-          className={cn(
-            "flex-1 items-center justify-between min-w-0 flex-shrink",
-            isCompact && "py-6 text-base font-medium",
-          )}
-          size={isCompact ? "lg" : "default"}
-          disabled={isWorking || adbBusy}
-          onClick={handleCameraBtnClicked}
-        >
-          <span className="flex items-center gap-2 min-w-0 overflow-hidden">
-            <Camera className="h-5 w-5 flex-shrink-0" />
-            <span className="truncate">{t("take-photo")}</span>
-          </span>
-          <ShortcutHint shortcut={cameraShortcut} />
-        </Button>
+        {/* <Button */}
+        {/*   ref={cameraBtnRef} */}
+        {/*   variant="secondary" */}
+        {/*   className={cn( */}
+        {/*     "flex-1 items-center justify-between min-w-0 shrink", */}
+        {/*     isCompact && "py-6 text-base font-medium", */}
+        {/*   )} */}
+        {/*   size={isCompact ? "lg" : "default"} */}
+        {/*   disabled={isWorking || adbBusy} */}
+        {/*   onClick={handleCameraBtnClicked} */}
+        {/* > */}
+        {/*   <span className="flex items-center gap-2 min-w-0 overflow-hidden"> */}
+        {/*     <Camera className="h-5 w-5 shrink-0" /> */}
+        {/*     <span className="truncate">{t("take-photo")}</span> */}
+        {/*   </span> */}
+        {/*   <ShortcutHint shortcut={cameraShortcut} /> */}
+        {/* </Button> */}
         <TextInputDialog
           isOpen={textInputOpen}
           onOpenChange={setTextInputOpen}
