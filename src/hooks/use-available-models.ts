@@ -1,9 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  type AiModelSummary,
-  type AiSource,
-  useAiStore,
-} from "@/store/ai-store";
+import { type AiModelSummary, type AiSource, useAiStore, } from "@/store/ai-store";
 
 export interface SourceModels {
   source: AiSource;
@@ -90,6 +86,15 @@ export function useAvailableModels() {
   );
   const prevSourcesHashRef = useRef<string | null>(null);
 
+  // Ref to track if component is mounted (for forceRefetch cancellation)
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   // Force refresh function (bypasses cache)
   const forceRefetch = useCallback(async () => {
     setIsLoading(true);
@@ -107,9 +112,11 @@ export function useAvailableModels() {
       }
     }
 
-    writeCache(results, sourcesHash);
-    setSourceModelsMap(results);
-    setIsLoading(false);
+    if (isMountedRef.current) {
+      writeCache(results, sourcesHash);
+      setSourceModelsMap(results);
+      setIsLoading(false);
+    }
   }, [enabledSources, getClientForSource, sourcesHash]);
 
   // Regular fetch with cache support

@@ -106,17 +106,19 @@ function loadLegacyGemini(): {
   }
 }
 
+// Memoize legacy config to avoid duplicate localStorage reads during initialization
+const legacyGeminiConfig = loadLegacyGemini();
+
 function createDefaultSources(): AiSource[] {
-  const legacy = loadLegacyGemini();
   return [
     {
       id: "gemini-default",
       name: "Gemini",
       provider: "gemini",
-      apiKey: legacy?.source.apiKey ?? null,
-      baseUrl: legacy?.source.baseUrl ?? DEFAULT_GEMINI_BASE_URL,
-      traits: legacy?.source.traits,
-      thinkingBudget: legacy?.source.thinkingBudget ?? 8192,
+      apiKey: legacyGeminiConfig?.source.apiKey ?? null,
+      baseUrl: legacyGeminiConfig?.source.baseUrl ?? DEFAULT_GEMINI_BASE_URL,
+      traits: legacyGeminiConfig?.source.traits,
+      thinkingBudget: legacyGeminiConfig?.source.thinkingBudget ?? 8192,
       enabled: true,
     },
     {
@@ -134,8 +136,7 @@ function createDefaultSources(): AiSource[] {
 }
 
 function loadLegacyModel(): string {
-  const legacy = loadLegacyGemini();
-  return legacy?.model ?? DEFAULT_GEMINI_MODEL;
+  return legacyGeminiConfig?.model ?? DEFAULT_GEMINI_MODEL;
 }
 
 function createClientForSource(source: AiSource): AiClient | null {
