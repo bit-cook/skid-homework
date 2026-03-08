@@ -1,7 +1,12 @@
 "use client";
 
 import { useQwenHintAutoToggle } from "@/hooks/useQwenHintAutoToggle";
-import { type AiProvider, DEFAULT_GEMINI_BASE_URL, DEFAULT_OPENAI_BASE_URL, useAiStore, } from "@/store/ai-store";
+import {
+  type AiProvider,
+  DEFAULT_GEMINI_BASE_URL,
+  DEFAULT_OPENAI_BASE_URL,
+  useAiStore,
+} from "@/store/ai-store";
 import {
   type LanguagePreference,
   type ShortcutAction,
@@ -18,18 +23,30 @@ import { useAvailableModels } from "@/hooks/use-available-models";
 import ShortcutRecorder from "./ShortcutRecorder";
 import { useTheme } from "../theme-provider";
 import { Button } from "../ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from "../ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
 import { Checkbox } from "../ui/checkbox";
 import { Input } from "../ui/input";
 import { Kbd } from "../ui/kbd";
 import { Label } from "../ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "../ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 import { Slider } from "../ui/slider";
 import { Textarea } from "../ui/textarea";
 import AIAPICredentialsManager from "./AIAPICredentialsManager";
 import AISourceManager from "./AISourceManager";
 import ExplanationModeSelector from "./ExplanationModeSelector";
-import ModelSelector, { CUSTOM_MODEL_VALUE } from "../ui/model-selector.tsx";
+import ModelSelector, { CUSTOM_MODEL_VALUE } from "../ui/model-selector";
 import { RefreshCw } from "lucide-react";
 
 export const DEFAULT_BASE_BY_PROVIDER: Record<AiProvider, string> = {
@@ -67,28 +84,28 @@ export default function SettingsPage() {
 
   const navTargetPath = searchParams.get("from");
 
-  const sources = useAiStore((s) => s.sources);
-  const activeSourceId = useAiStore((s) => s.activeSourceId);
-  const setActiveSource = useAiStore((s) => s.setActiveSource);
-  const fallbackModel = useAiStore((s) => s.fallbackModel);
-  const currentModel = useAiStore((s) => s.currentModel);
-  const updateSource = useAiStore((s) => s.updateSource);
-  const setFallbackModel = useAiStore((s) => s.setFallbackModel);
-  const setCurrentModel = useAiStore((s) => s.setCurrentModel);
-  const isCustomModel = useAiStore((s) => s.isCustomModel);
-  const setIsCustomModel = useAiStore((s) => s.setIsCustomModel);
-  const isCustomFallback = useAiStore((s) => s.isCustomFallback);
-  const setIsCustomFallback = useAiStore((s) => s.setIsCustomFallback);
-  const customModelName = useAiStore((s) => s.customModelName);
-  const setCustomModelName = useAiStore((s) => s.setCustomModelName);
-  const customModelSourceId = useAiStore((s) => s.customModelSourceId);
-  const setCustomModelSourceId = useAiStore((s) => s.setCustomModelSourceId);
-  const customFallbackName = useAiStore((s) => s.customFallbackName);
-  const setCustomFallbackName = useAiStore((s) => s.setCustomFallbackName);
-  const customFallbackSourceId = useAiStore((s) => s.customFallbackSourceId);
-  const setCustomFallbackSourceId = useAiStore(
-    (s) => s.setCustomFallbackSourceId
-  );
+  const {
+    sources,
+    activeSourceId,
+    setActiveSource,
+    fallbackModel,
+    currentModel,
+    updateSource,
+    setFallbackModel,
+    setCurrentModel,
+    isCustomModel,
+    setIsCustomModel,
+    isCustomFallback,
+    setIsCustomFallback,
+    customModelName,
+    setCustomModelName,
+    customModelSourceId,
+    setCustomModelSourceId,
+    customFallbackName,
+    setCustomFallbackName,
+    customFallbackSourceId,
+    setCustomFallbackSourceId,
+  } = useAiStore((s) => s);
 
   const {
     imageEnhancement: imageEnhancement,
@@ -433,9 +450,9 @@ export default function SettingsPage() {
               <ModelSelector
                 sourceModelsMap={sourceModelsMap}
                 value={currentModel}
-                onChange={handleModelChange}
+                onChangeAction={handleModelChange}
                 open={modelPopoverOpen}
-                onOpenChange={setModelPopoverOpen}
+                onOpenChangeAction={setModelPopoverOpen}
                 allowCustom={true}
                 isCustomSelected={isCustomModel}
                 className="flex-2"
@@ -554,9 +571,9 @@ export default function SettingsPage() {
               <ModelSelector
                 sourceModelsMap={sourceModelsMap}
                 value={fallbackModel}
-                onChange={handleFallbackChange}
+                onChangeAction={handleFallbackChange}
                 open={fallbackPopoverOpen}
-                onOpenChange={setFallbackPopoverOpen}
+                onOpenChangeAction={setFallbackPopoverOpen}
                 allowNone={true}
                 noneLabel={t("model.fallback.none")}
                 allowCustom={true}

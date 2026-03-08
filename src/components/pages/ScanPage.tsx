@@ -221,7 +221,7 @@ export default function ScanPage() {
       let lastError: Error | undefined;
       let delay = initialDelayMs;
 
-      for (let attempt = 1; attempt <= Math.max(1, maxRetries); attempt++) {
+      for (let attempt = 1; attempt <= Math.max(1, maxRetries); ++attempt) {
         try {
           return { result: await asyncFn(model) };
         } catch (error) {
@@ -587,9 +587,9 @@ ${traits}
               </TabsList>
               <TabsContent value="capture" className="mt-4">
                 <ActionsCard
-                  appendFiles={appendFiles}
-                  clearAll={clearAll}
-                  startScan={startScan}
+                  appendFilesAction={appendFiles}
+                  clearAllAction={clearAll}
+                  startScanAction={startScan}
                   totalBytes={totalBytes}
                   items={items}
                   allowPdfUploads={allowPdfUploads}
@@ -608,9 +608,9 @@ ${traits}
           ) : (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:gap-8">
               <ActionsCard
-                appendFiles={appendFiles}
-                clearAll={clearAll}
-                startScan={startScan}
+                appendFilesAction={appendFiles}
+                clearAllAction={clearAll}
+                startScanAction={startScan}
                 totalBytes={totalBytes}
                 items={items}
                 allowPdfUploads={allowPdfUploads}

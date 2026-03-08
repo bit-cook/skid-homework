@@ -1,3 +1,5 @@
+"use client";
+
 import type { FileItem } from "@/store/problems-store";
 import { useCallback } from "react";
 import ActionsArea from "./ActionsArea";
@@ -17,10 +19,13 @@ import ModelSelectorPopover from "./ModelSelectorPopover";
 
 export type ActionsCardProps = {
   items: FileItem[];
-  appendFiles: (files: File[] | FileList, source: FileItem["source"]) => void;
+  appendFilesAction: (
+    files: File[] | FileList,
+    source: FileItem["source"]
+  ) => void;
   totalBytes: number;
-  clearAll: () => void;
-  startScan: () => Promise<void>;
+  clearAllAction: () => void;
+  startScanAction: () => Promise<void>;
   allowPdfUploads: boolean;
   layout?: "default" | "mobile";
   className?: string;
@@ -28,10 +33,10 @@ export type ActionsCardProps = {
 
 export default function ActionsCard({
   items,
-  appendFiles,
+  appendFilesAction,
   totalBytes,
-  clearAll,
-  startScan,
+  clearAllAction,
+  startScanAction,
   allowPdfUploads,
   layout = "default",
   className,
@@ -58,7 +63,7 @@ export default function ActionsCard({
   const settingsShortcut = useShortcut(
     "openSettings",
     () => handleSettingsBtnClick(),
-    [handleSettingsBtnClick],
+    [handleSettingsBtnClick]
   );
 
   const chatShortcut = useShortcut("openChat", () => handleChatBtnClick(), [
@@ -70,8 +75,8 @@ export default function ActionsCard({
       className={cn(
         "md:col-span-1 border-white/10 backdrop-blur",
         layout === "mobile" &&
-        "border border-white/20 bg-background/70 shadow-lg backdrop-blur-lg",
-        className,
+          "border border-white/20 bg-background/70 shadow-lg backdrop-blur-lg",
+        className
       )}
     >
       <CardHeader
@@ -80,7 +85,7 @@ export default function ActionsCard({
         <CardTitle
           className={cn(
             "text-base",
-            layout === "mobile" && "text-lg font-semibold",
+            layout === "mobile" && "text-lg font-semibold"
           )}
         >
           {t("title")}
@@ -89,7 +94,10 @@ export default function ActionsCard({
       <CardContent
         className={cn("space-y-4", layout === "mobile" && "px-5 pb-5 pt-1")}
       >
-        <UploadArea appendFiles={appendFiles} allowPdf={allowPdfUploads} />
+        <UploadArea
+          appendFiles={appendFilesAction}
+          allowPdf={allowPdfUploads}
+        />
 
         <Separator className="my-2" />
 
@@ -99,8 +107,8 @@ export default function ActionsCard({
 
         <ActionsArea
           itemsLength={items.length}
-          clearAll={clearAll}
-          startScan={startScan}
+          clearAll={clearAllAction}
+          startScan={startScanAction}
           layout={layout}
         />
 
@@ -109,9 +117,14 @@ export default function ActionsCard({
             <OnlineSearchToggle
               checked={onlineSearchEnabled}
               onCheckedChange={setOnlineSearchEnabled}
-              label={onlineSearchEnabled
-                ? tCommon("settings-page.thinking.online-search.toggle.enabled")
-                : tCommon("settings-page.thinking.online-search.toggle.disabled")
+              label={
+                onlineSearchEnabled
+                  ? tCommon(
+                      "settings-page.thinking.online-search.toggle.enabled"
+                    )
+                  : tCommon(
+                      "settings-page.thinking.online-search.toggle.disabled"
+                    )
               }
             />
           </div>
@@ -120,7 +133,7 @@ export default function ActionsCard({
         <div
           className={cn(
             "flex gap-2 flex-wrap",
-            layout === "mobile" && "flex-col",
+            layout === "mobile" && "flex-col"
           )}
         >
           <Button

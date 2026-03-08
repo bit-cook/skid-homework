@@ -22,12 +22,12 @@ import { type SourceModels } from "@/hooks/use-available-models";
 
 export const CUSTOM_MODEL_VALUE = "__custom__";
 
-export interface ModelSelectorProps {
+export type ModelSelectorProps = {
   sourceModelsMap: SourceModels[];
   value: string | null;
-  onChange: (model: string) => void;
+  onChangeAction: (model: string) => void;
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onOpenChangeAction: (open: boolean) => void;
   placeholder?: string;
   allowNone?: boolean;
   noneLabel?: string;
@@ -36,14 +36,14 @@ export interface ModelSelectorProps {
   isCustomSelected?: boolean;
   excludeModel?: string;
   className?: string;
-}
+};
 
 export default function ModelSelector({
   sourceModelsMap,
   value,
-  onChange,
+  onChangeAction,
   open,
-  onOpenChange,
+  onOpenChangeAction,
   placeholder,
   allowNone = false,
   noneLabel,
@@ -86,12 +86,12 @@ export default function ModelSelector({
   ]);
 
   const handleSelect = (model: string) => {
-    onChange(model);
-    onOpenChange(false);
+    onChangeAction(model);
+    onOpenChangeAction(false);
   };
 
   return (
-    <Popover open={open} onOpenChange={onOpenChange}>
+    <Popover open={open} onOpenChange={onOpenChangeAction}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
