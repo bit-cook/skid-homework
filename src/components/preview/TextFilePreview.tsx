@@ -10,11 +10,11 @@ import {
 } from "../ui/dialog";
 import CodeRenderer from "@/components/markdown/CodeRenderer";
 
-export interface TextFilePreviewProps {
+export type TextFilePreviewProps = {
   item: FileItem;
 }
 
-export const TextFilePreview = ({ item }: TextFilePreviewProps) => {
+export function TextFilePreview({ item }: TextFilePreviewProps) {
   const [content, setContent] = useState<string>("");
 
   useEffect(() => {
