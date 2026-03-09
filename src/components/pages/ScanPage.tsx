@@ -12,7 +12,11 @@ import solvePrompt from "@/ai/prompts/solve.prompt.md";
 import { uint8ToBase64 } from "@/utils/encoding";
 import { parseSolveResponse } from "@/ai/response";
 
-import { type FileItem as FileItem, type ProblemSolution, useProblemsStore, } from "@/store/problems-store";
+import {
+  type FileItem,
+  type ProblemSolution,
+  useProblemsStore
+} from "@/store/problems-store";
 import SolutionsArea from "../solutions/SolutionsArea";
 import { useSettingsStore } from "@/store/settings-store";
 import { processImage } from "@/utils/image-post-processing";
@@ -46,7 +50,7 @@ export default function ScanPage() {
     removeSolutionsByIds,
     clearAllSolutions,
     appendStreamedOutput,
-    clearStreamedOutput,
+    clearStreamedOutput
   } = useProblemsStore((s) => s);
   const isStoreReady = useStoreInitialization();
 
@@ -55,23 +59,32 @@ export default function ScanPage() {
   );
 
   // Zustand store for AI provider configuration.
-  const sources = useAiStore((state) => state.sources);
-  const activeSourceId = useAiStore((state) => state.activeSourceId);
-  const getClientForSource = useAiStore((state) => state.getClientForSource);
+  const {
+    sources,
+    activeSourceId,
+    currentModel,
+    fallbackModel,
+    fallbackSourceId,
+    isCustomFallback,
+    customFallbackSourceId,
+    getClientForSource
+  } = useAiStore((s) => s);
   const allowPdfUploads = useAiStore((state) => state.allowPdfUpload());
 
-  const enabledSources = useMemo(() => {
-    const available = sources.filter(
-      (source) => source.enabled && Boolean(source.apiKey)
+  const activeSource = useMemo(() => {
+    return sources.find(
+      (source) =>
+        source.id === activeSourceId && source.enabled && Boolean(source.apiKey)
     );
-
-    const active = available.find((source) => source.id === activeSourceId);
-    if (!active) {
-      return available;
-    }
-
-    return [active, ...available.filter((source) => source.id !== active.id)];
   }, [sources, activeSourceId]);
+
+  // Resolve the actual fallback source ID (custom or from model selection)
+  const resolvedFallbackSourceId = useMemo(() => {
+    if (isCustomFallback) {
+      return customFallbackSourceId || null;
+    }
+    return fallbackSourceId;
+  }, [isCustomFallback, customFallbackSourceId, fallbackSourceId]);
 
   // State to track if the AI is currently processing images.
   const setWorking = useProblemsStore((s) => s.setWorking);
@@ -132,15 +145,15 @@ export default function ScanPage() {
 
         toast(t("toasts.unsupported-file.title"), {
           description: t("toasts.unsupported-file.description", {
-            mimeType: f.type,
-          }),
+            mimeType: f.type
+          })
         });
         return false;
       });
 
       if (rejectedPdf) {
         toast(t("toasts.pdf-blocked.title"), {
-          description: t("toasts.pdf-blocked.description"),
+          description: t("toasts.pdf-blocked.description")
         });
       }
 
@@ -156,7 +169,7 @@ export default function ScanPage() {
         status:
           file.type.startsWith("image/") && imageEnhancement
             ? "processing"
-            : "pending",
+            : "pending"
       }));
 
       addFileItems(initialItems);
@@ -172,13 +185,13 @@ export default function ScanPage() {
                 updateFileItem(item.id, {
                   status: "pending",
                   file: result.file,
-                  url: result.url,
+                  url: result.url
                 });
               })
               .catch((error) => {
                 console.error(`Failed to process ${item.displayName}:`, error);
                 updateFileItem(item.id, {
-                  status: "failed",
+                  status: "failed"
                 });
               });
           }
@@ -206,65 +219,135 @@ export default function ScanPage() {
   };
 
   const retryAsyncOperation = async (
-    asyncFn: () => Promise<string>,
+    asyncFn: (model: string, sourceId?: string) => Promise<string>,
+    sourceName: string,
+    primaryModel: string,
+    primarySourceId: string,
+    fallbackModelName: string | null,
+    fallbackSourceIdParam: string | null,
     maxRetries: number = 5,
     initialDelayMs: number = 5000
   ): Promise<string> => {
-    let lastError: Error | undefined;
-    let delay = initialDelayMs;
+    // Helper function to run a single model's retry loop
+    const runWithRetry = async (
+      model: string,
+      sourceId: string | undefined,
+      logPrefix: string
+    ): Promise<{ result: string } | { error: Error }> => {
+      let lastError: Error | undefined;
+      let delay = initialDelayMs;
 
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        return await asyncFn();
-      } catch (error) {
-        lastError = error as Error;
+      for (let attempt = 1; attempt <= Math.max(1, maxRetries); ++attempt) {
+        try {
+          return { result: await asyncFn(model, sourceId) };
+        } catch (error) {
+          lastError = error as Error;
 
-        if (isNonRetryableError(error)) {
-          throw error;
-        }
+          if (isNonRetryableError(error)) {
+            return { error: lastError };
+          }
 
-        console.log(
-          `Attempt ${attempt} failed. Retrying in ${delay / 1000}s...`
-        );
+          const errorMessage = lastError?.message || String(error);
+          console.log(
+            `${logPrefix} attempt ${attempt} failed. Retrying in ${delay / 1000}s...`
+          );
 
-        if (attempt < maxRetries) {
-          await new Promise((resolve) => setTimeout(resolve, delay));
-          delay *= 2;
+          if (attempt < Math.max(1, maxRetries)) {
+            toast.warning(t("toasts.retry.title"), {
+              description: t("toasts.retry.description", {
+                attempt,
+                error: errorMessage.slice(0, 100),
+                delay: Math.round(delay / 1000)
+              })
+            });
+            await new Promise((resolve) => setTimeout(resolve, delay));
+            delay *= 2;
+          }
         }
       }
+
+      return { error: lastError ?? new Error("Unknown AI failure") };
+    };
+
+    // Try with primary model first
+    const primaryResult = await runWithRetry(
+      primaryModel,
+      primarySourceId,
+      "Primary model"
+    );
+    if ("result" in primaryResult) {
+      return primaryResult.result;
     }
-    throw lastError ?? new Error("Unknown AI failure");
+
+    // Check if primary error is non-retryable
+    if (isNonRetryableError(primaryResult.error)) {
+      throw primaryResult.error;
+    }
+
+    // Primary model exhausted, try fallback model if available
+    // Use fallback source if specified (for cross-provider fallback), otherwise use primary source
+    if (fallbackModelName) {
+      const effectiveFallbackSourceId =
+        fallbackSourceIdParam ?? primarySourceId;
+
+      toast.info(t("toasts.fallback.title"), {
+        description: t("toasts.fallback.description", {
+          model: fallbackModelName
+        })
+      });
+
+      const fallbackResult = await runWithRetry(
+        fallbackModelName,
+        effectiveFallbackSourceId,
+        "Fallback"
+      );
+      if ("result" in fallbackResult) {
+        return fallbackResult.result;
+      }
+
+      // Check if fallback error is non-retryable
+      if (isNonRetryableError(fallbackResult.error)) {
+        throw fallbackResult.error;
+      }
+    }
+
+    // All retries exhausted
+    if (maxRetries > 0) {
+      toast.error(t("toasts.retry-exhausted.title"), {
+        description: t("toasts.retry-exhausted.description", {
+          source: sourceName,
+          maxRetries
+        })
+      });
+    }
+
+    throw primaryResult.error;
   };
 
   /**
    * Main function to start the scanning process.
-   * It polls through the configured AI sources until one succeeds per item.
+   * Uses the active AI source to process items.
    */
   const startScan = async () => {
-    const availableSources = enabledSources;
-
-    if (!availableSources.length) {
+    if (!activeSource) {
       toast(t("toasts.no-source.title"), {
-        description: t("toasts.no-source.description"),
+        description: t("toasts.no-source.description")
       });
       return;
     }
 
-    const invalidSource = availableSources.find(
-      (source) => !source.model || source.model.length === 0
-    );
-    if (invalidSource) {
+    if (!currentModel || currentModel.length === 0) {
       toast(t("toasts.no-model.title"), {
         description: t("toasts.no-model.description", {
-          provider: invalidSource.name,
-        }),
+          provider: activeSource.name
+        })
       });
       return;
     }
 
     if (items.filter((item) => item.status === "processing").length !== 0) {
       toast(t("toasts.post-processing.title"), {
-        description: t("toasts.post-processing.description"),
+        description: t("toasts.post-processing.description")
       });
       return;
     }
@@ -275,7 +358,7 @@ export default function ScanPage() {
 
     if (itemsToProcess.length === 0) {
       toast(t("toasts.all-processed.title"), {
-        description: t("toasts.all-processed.description"),
+        description: t("toasts.all-processed.description")
       });
       return;
     }
@@ -286,15 +369,15 @@ export default function ScanPage() {
 
     if (hasPdfItems && !allowPdfUploads) {
       toast(t("toasts.pdf-blocked.title"), {
-        description: t("toasts.pdf-blocked.description"),
+        description: t("toasts.pdf-blocked.description")
       });
       return;
     }
 
     toast(t("toasts.working.title"), {
       description: t("toasts.working.description", {
-        count: itemsToProcess.length,
-      }),
+        count: itemsToProcess.length
+      })
     });
     setWorking(true);
 
@@ -311,79 +394,85 @@ export default function ScanPage() {
         const buf = await item.file.arrayBuffer();
         const base64 = await uint8ToBase64(new Uint8Array(buf));
 
-        let lastError: unknown = null;
-
         updateSolution(item.id, {
-          status: "processing",
+          status: "processing"
         });
 
-        for (const source of availableSources) {
-          try {
-            const aiClient = getClientForSource(source.id);
-            if (!aiClient) {
-              throw new Error(
-                t("errors.missing-key", { provider: source.name })
-              );
-            }
+        const aiClient = getClientForSource(activeSource.id);
+        if (!aiClient) {
+          throw new Error(
+            t("errors.missing-key", { provider: activeSource.name })
+          );
+        }
 
-            const promptPrompt = source.traits
-              ? `\nUser defined prompts:
+        const promptPrompt = activeSource.traits
+          ? `\nUser defined prompts:
 <prompt>
-${source.traits}
+${activeSource.traits}
 </prompt>
 `
-              : "";
+          : "";
 
-            const traitsPrompt = traits
-              ? `\nUser defined traits:
+        const traitsPrompt = traits
+          ? `\nUser defined traits:
 <traits>
 ${traits}
 </traits>
 `
-              : "";
+          : "";
 
-            aiClient.addSystemPrompt(solvePrompt);
-            aiClient.addSystemPrompt(promptPrompt + traitsPrompt);
+        aiClient.addSystemPrompt(solvePrompt);
+        aiClient.addSystemPrompt(promptPrompt + traitsPrompt);
 
-            aiClient.setAvailableTools(getEnabledToolCallingPrompts());
+        aiClient.setAvailableTools(getEnabledToolCallingPrompts());
 
-            clearStreamedOutput(item.id);
+        clearStreamedOutput(item.id);
 
-            const resText = await retryAsyncOperation(() =>
-              aiClient.sendMedia(
-                {
-                  data: base64,
-                  mimeType: item.mimeType,
-                  name: item.displayName,
-                },
-                undefined,
-                source.model,
-                (text) => appendStreamedOutput(item.id, text),
-                { onlineSearch: onlineSearchEnabled }
-              )
-            );
-
-            const res = parseSolveResponse(resText);
-            if (!res) {
-              throw new Error(t("errors.parsing-failed"));
+        const resText = await retryAsyncOperation(
+          (model, sourceId) => {
+            // Get the appropriate client for the source (supports cross-provider fallback)
+            const client = sourceId ? getClientForSource(sourceId) : aiClient;
+            if (!client) {
+              throw new Error(t("errors.no-client"));
             }
 
-            updateSolution(item.id, {
-              status: "success",
-              problems: res.problems ?? [],
-              aiSourceId: source.id,
-            });
+            // Re-apply system prompts for the client
+            client.addSystemPrompt(solvePrompt);
+            client.addSystemPrompt(promptPrompt + traitsPrompt);
+            client.setAvailableTools(getEnabledToolCallingPrompts());
 
-            updateItemStatus(item.id, "success");
-            return;
-          } catch (error) {
-            lastError = error;
-            console.error(`Source ${source.name} failed for ${item.id}`, error);
-            clearStreamedOutput(item.id);
-          }
+            return client.sendMedia(
+              {
+                data: base64,
+                mimeType: item.mimeType,
+                name: item.displayName
+              },
+              undefined,
+              model,
+              (text) => appendStreamedOutput(item.id, text),
+              { onlineSearch: onlineSearchEnabled }
+            );
+          },
+          activeSource.name,
+          currentModel,
+          activeSource.id,
+          fallbackModel,
+          resolvedFallbackSourceId,
+          activeSource.maxRetries ?? 5
+        );
+
+        const res = parseSolveResponse(resText);
+        if (!res) {
+          throw new Error(t("errors.parsing-failed"));
         }
 
-        throw lastError ?? new Error("All AI sources exhausted");
+        updateSolution(item.id, {
+          status: "success",
+          problems: res.problems ?? [],
+          aiSourceId: activeSource.id
+        });
+
+        updateItemStatus(item.id, "success");
       };
 
       // add to orderedSolutions
@@ -392,7 +481,7 @@ ${traits}
         addSolution({
           fileId: item.id,
           status: "pending",
-          problems: [],
+          problems: []
         });
       }
 
@@ -408,15 +497,15 @@ ${traits}
               problem: t("errors.processing-failed.problem"),
               answer: t("errors.processing-failed.answer"),
               explanation: t("errors.processing-failed.explanation", {
-                error: String(err),
+                error: String(err)
               }),
-              steps: [],
+              steps: []
             };
 
             updateSolution(itemsToProcess[i].url, {
               status: "failed",
               problems: [failureProblem],
-              aiSourceId: undefined,
+              aiSourceId: undefined
             });
             clearStreamedOutput(itemsToProcess[i].url);
 
@@ -433,11 +522,11 @@ ${traits}
     } catch (e) {
       console.error(e);
       toast(t("toasts.error.title"), {
-        description: t("toasts.error.description"),
+        description: t("toasts.error.description")
       });
     } finally {
       toast(t("toasts.done.title"), {
-        description: t("toasts.done.description"),
+        description: t("toasts.done.description")
       });
       setWorking(false);
     }
@@ -540,9 +629,9 @@ ${traits}
               </TabsList>
               <TabsContent value="capture" className="mt-4">
                 <ActionsCard
-                  appendFiles={appendFiles}
-                  clearAll={clearAll}
-                  startScan={startScan}
+                  appendFilesAction={appendFiles}
+                  clearAllAction={clearAll}
+                  startScanAction={startScan}
                   totalBytes={totalBytes}
                   items={items}
                   allowPdfUploads={allowPdfUploads}
@@ -561,9 +650,9 @@ ${traits}
           ) : (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:gap-8">
               <ActionsCard
-                appendFiles={appendFiles}
-                clearAll={clearAll}
-                startScan={startScan}
+                appendFilesAction={appendFiles}
+                clearAllAction={clearAll}
+                startScanAction={startScan}
                 totalBytes={totalBytes}
                 items={items}
                 allowPdfUploads={allowPdfUploads}
