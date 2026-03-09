@@ -39,7 +39,7 @@ export const TextFilePreview = ({ item }: TextFilePreviewProps) => {
         </div>
       </DialogTrigger>
       <DialogContent
-        className="flex h-[85vh] w-[75vw] max-w-[75vw] sm:max-w-[75vw] flex-col bg-slate-950 p-6 pt-12"
+        className="flex h-[85vh] w-[75vw] max-w-[75vw] sm:max-w-[75vw] flex-col p-6 pt-12"
         onClick={(e) => e.stopPropagation()}
       >
         <DialogHeader className="sr-only">
